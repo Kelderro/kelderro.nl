@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
 const caseStudyRoutes = [
     {
         slug: 'transavia/freelance-ict-consultant',
-        role: 'Freelance Senior ICT Consultant',
+        role: 'Freelance Principal Technology Consultant',
     },
     {
         slug: 'kpmg/principal-software-engineer',
