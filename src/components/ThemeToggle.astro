@@ -86,8 +86,18 @@ import Icon from './Icon.astro';
                 button.setAttribute('aria-pressed', String(dark));
             };
 
-            // Toggle the theme when a user clicks the button.
-            button.addEventListener('click', () => setTheme(!this.isDark()));
+            // Toggle the theme when a user clicks the button, and remember that
+            // explicit choice. Storing it only on a click keeps this a preference
+            // the visitor set themselves, which needs no consent (ADR 0002).
+            button.addEventListener('click', () => {
+                const dark = !this.isDark();
+                setTheme(dark);
+                try {
+                    localStorage.setItem('theme', dark ? 'dark' : 'light');
+                } catch {
+                    // Storage can be unavailable (private mode, blocked site data).
+                }
+            });
 
             // Initialize button state to reflect current theme.
             setTheme(this.isDark());

@@ -54,6 +54,13 @@ jobs:
 
             - name: Build
               run: pnpm build
+              env:
+                  # Cookieless Cloudflare Web Analytics (ADR 0002). Only production
+                  # builds get the beacon, so preview traffic is not counted. The
+                  # token is public (it ends up in the page source), so it is a
+                  # repository variable rather than a secret. Without the variable
+                  # the beacon is left out entirely.
+                  PUBLIC_CF_WEB_ANALYTICS_TOKEN: ${{ github.event_name == 'push' && vars.CF_WEB_ANALYTICS_TOKEN || '' }}
 
             # Preview deployments require Cloudflare secrets, which are not
             # available to Dependabot or fork pull requests. Skip the deploy in
@@ -156,12 +163,21 @@ jobs:
               # always fail regardless of the actual site configuration.
               # Production is public and must be crawlable, so for pushes to main
               # the headers are removed and is-crawlable is asserted again.
+              #
+              # Budgets (see #159): Core Web Vitals at Google's "good" thresholds
+              # (LCP 2.5 s, CLS 0.1, TBT 200 ms) and page weight at roughly twice
+              # the November 2026 baseline (91 KiB in 13 requests, 7.5 KiB of
+              # script), so real regressions fail CI without flaky failures.
+              # At most two third-party requests are allowed: the cookieless
+              # Cloudflare Web Analytics beacon script and its report (ADR 0002).
+              # Any other tracker or third-party embed fails the build. Three
+              # runs reduce timing noise.
               run: |
                   cat << 'EOF' > lighthouserc.json
                   {
                     "ci": {
                       "collect": {
-                        "numberOfRuns": 1,
+                        "numberOfRuns": 3,
                         "settings": {
                           "extraHeaders": {
                             "CF-Access-Client-Id": "${{ secrets.CF_ACCESS_CLIENT_ID }}",
@@ -180,7 +196,17 @@ jobs:
                           "network-dependency-tree-insight": "warn",
                           "prioritize-lcp-image": "warn",
                           "target-size": "warn",
-                          "unused-javascript": "warn"
+                          "unused-javascript": "warn",
+                          "categories:performance": ["error", { "minScore": 0.9 }],
+                          "categories:accessibility": ["error", { "minScore": 0.95 }],
+                          "largest-contentful-paint": ["error", { "maxNumericValue": 2500 }],
+                          "cumulative-layout-shift": ["error", { "maxNumericValue": 0.1 }],
+                          "total-blocking-time": ["error", { "maxNumericValue": 200 }],
+                          "resource-summary:total:size": ["error", { "maxNumericValue": 204800 }],
+                          "resource-summary:total:count": ["error", { "maxNumericValue": 25 }],
+                          "resource-summary:script:size": ["error", { "maxNumericValue": 30720 }],
+                          "resource-summary:image:size": ["error", { "maxNumericValue": 122880 }],
+                          "resource-summary:third-party:count": ["error", { "maxNumericValue": 2 }]
                         }
                       }
                     }

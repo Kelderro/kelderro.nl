@@ -1,0 +1,184 @@
+---
+import Hero from '../components/Hero.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const lastUpdated = '5 November 2026';
+---
+
+<BaseLayout
+    title="Privacy Statement | Rob op den Kelder"
+    description="How this website handles personal data: no cookies, no tracking, and cookieless, privacy-friendly analytics."
+>
+    <div class="stack gap-20">
+        <main class="wrapper stack gap-8">
+            <Hero
+                title="Privacy Statement"
+                tagline="No cookies, no tracking, no consent banner. Here is exactly what this website does with your data."
+                align="start"
+            />
+
+            <article class="privacy">
+                <p class="updated">Last updated: {lastUpdated}</p>
+
+                <h2>Who is responsible</h2>
+                <p>
+                    This website is run by Rob op den Kelder, registered with the Dutch Chamber of
+                    Commerce (KVK) under number 88664236. For any privacy question or request, email
+                    <a href="mailto:privacy@kelderro.nl">privacy@kelderro.nl</a>.
+                </p>
+
+                <h2>In short</h2>
+                <ul>
+                    <li>This website sets no cookies.</li>
+                    <li>
+                        There is no advertising, no social media tracking and no cross-site
+                        tracking.
+                    </li>
+                    <li>
+                        Visitor statistics are collected without cookies or other identifiers, so
+                        they can't be linked to you as a person.
+                    </li>
+                    <li>Your data is never sold or shared for anyone else's purposes.</li>
+                </ul>
+
+                <h2>Hosting</h2>
+                <p>
+                    The website is hosted on Cloudflare Pages. To deliver pages and protect the site
+                    against abuse, Cloudflare necessarily processes technical data such as your IP
+                    address, browser type and the page you request. Cloudflare acts as a processor
+                    on my behalf under its data processing agreement. The legal basis is my
+                    legitimate interest in running a secure, working website (Article 6(1)(f) GDPR).
+                </p>
+                <p>
+                    Cloudflare keeps short-lived technical logs, including IP addresses, to deliver
+                    and secure the website. I have no access to these logs. They are kept and
+                    deleted under Cloudflare's own retention policy.
+                </p>
+
+                <h2>Visitor statistics</h2>
+                <p>
+                    To understand which pages are useful and how fast the site loads for real
+                    visitors, this website uses Cloudflare Web Analytics. It is designed to be
+                    privacy-first:
+                </p>
+                <ul>
+                    <li>
+                        It does not use cookies, local storage or any other storage on your device.
+                    </li>
+                    <li>It does not fingerprint you or recognise you across visits or websites.</li>
+                    <li>
+                        It only produces aggregated statistics: page views, the referring website,
+                        browser and device type, country, and page load performance.
+                    </li>
+                </ul>
+                <p>
+                    Because nothing is stored on or read back from your device to recognise you, and
+                    the statistics have little to no impact on your privacy, no consent is required.
+                    The legal basis is my legitimate interest in improving this website (Article
+                    6(1)(f) GDPR). Cloudflare processes this data as my processor.
+                </p>
+
+                <h2>Theme preference</h2>
+                <p>
+                    If you click the light/dark theme switch, your choice is saved in your browser's
+                    local storage so the site remembers it. It stays on your device, is never sent
+                    to me or anyone else, and is only saved when you click the switch yourself. You
+                    can remove it by clearing your browser's site data.
+                </p>
+
+                <h2>Offline support</h2>
+                <p>
+                    So the site also works on a poor connection, your browser keeps a copy of this
+                    website's own pages and images, much like its normal cache. This copy contains
+                    no personal data or identifiers and is never sent anywhere. It is replaced with
+                    every update of the site, and you can remove it by clearing your browser's site
+                    data.
+                </p>
+
+                <h2>Contact by email</h2>
+                <p>
+                    If you email me, I use your name, email address and message only to reply and to
+                    follow up on your request. I keep this correspondence as long as needed for that
+                    purpose, or longer where Dutch law requires it, for example for business
+                    administration.
+                </p>
+
+                <h2>International transfers</h2>
+                <p>
+                    Cloudflare is a US company with a global network, so data may be processed
+                    outside the European Economic Area. Such transfers are covered by the EU–US Data
+                    Privacy Framework and the EU Standard Contractual Clauses in Cloudflare's data
+                    processing agreement.
+                </p>
+
+                <h2>Links to other websites</h2>
+                <p>
+                    This website links to LinkedIn, GitHub and Microsoft Learn. These links don't
+                    load anything until you click them. Once you visit those sites, their own
+                    privacy policies apply.
+                </p>
+
+                <h2>Your rights</h2>
+                <p>
+                    In practice, the only personal data I hold is email correspondence. For those
+                    emails you have the right to access, correct or delete your data, to restrict or
+                    object to its processing, and to data portability. Email
+                    <a href="mailto:privacy@kelderro.nl">privacy@kelderro.nl</a> and I will respond
+                    within one month.
+                </p>
+                <p>
+                    Website visits and statistics can't be linked to you as a person, so I can't
+                    look up, hand over or delete data about your visit (Article 11 GDPR).
+                </p>
+                <p>
+                    You can always file a complaint with the Dutch Data Protection Authority, the
+                    <a href="https://autoriteitpersoonsgegevens.nl">Autoriteit Persoonsgegevens</a>.
+                </p>
+
+                <h2>Changes</h2>
+                <p>
+                    If the way this website handles data changes, this statement is updated and the
+                    date at the top changes with it.
+                </p>
+            </article>
+        </main>
+    </div>
+</BaseLayout>
+
+<style>
+    .privacy {
+        max-width: 65ch;
+        color: var(--gray-200);
+        line-height: 1.7;
+    }
+
+    .privacy h2 {
+        margin-top: 2.5rem;
+        margin-bottom: 0.75rem;
+        font-size: var(--text-xl);
+        color: var(--gray-0);
+    }
+
+    .privacy p,
+    .privacy ul {
+        margin-bottom: 1rem;
+    }
+
+    .privacy ul {
+        padding-left: 1.25rem;
+    }
+
+    .privacy li {
+        margin-bottom: 0.4rem;
+    }
+
+    .privacy a {
+        color: var(--accent-regular);
+        text-decoration: underline;
+    }
+
+    .updated {
+        font-size: var(--text-sm);
+        color: var(--gray-400);
+    }
+</style>
