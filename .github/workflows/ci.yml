@@ -156,6 +156,17 @@ jobs:
               with:
                   node-version-file: '.nvmrc'
 
+            - name: Check security headers
+              # public/_headers is the source of truth for the security headers.
+              # Preview deployments only get those headers, so they must match
+              # the file exactly. Production must send all of them, but a
+              # different value is only a warning while a Cloudflare dashboard
+              # rule may still override the file (see #154).
+              run: node scripts/check-security-headers.mjs "$TARGET_URL" ${{ github.event_name == 'pull_request' && '--exact' || '' }}
+              env:
+                  CF_ACCESS_CLIENT_ID: ${{ github.event_name == 'pull_request' && secrets.CF_ACCESS_CLIENT_ID || '' }}
+                  CF_ACCESS_CLIENT_SECRET: ${{ github.event_name == 'pull_request' && secrets.CF_ACCESS_CLIENT_SECRET || '' }}
+
             - name: Create lighthouserc.json
               # Preview config: sends the Zero Trust headers and disables
               # is-crawlable, because Cloudflare Pages automatically adds
