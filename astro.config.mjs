@@ -2,7 +2,6 @@ import { defineConfig, envField } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import sentry from '@sentry/astro';
 import sitemap from '@astrojs/sitemap';
-import spotlightjs from '@spotlightjs/astro';
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
@@ -67,7 +66,6 @@ export default defineConfig({
         ...(process.env.NODE_ENV !== 'development' && process.env.PUBLIC_SENTRY_DSN
             ? [sentry()]
             : []),
-        ...(process.env.NODE_ENV === 'development' && !process.env.CI ? [spotlightjs()] : []),
         mdx(),
         sitemap({ filter: page => !page.endsWith('/offline/') }),
         serviceWorkerVersion(),
