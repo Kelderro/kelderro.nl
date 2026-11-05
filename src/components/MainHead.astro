@@ -1,4 +1,5 @@
 ---
+import { PUBLIC_CF_WEB_ANALYTICS_TOKEN } from 'astro:env/server';
 import '../styles/global.css';
 
 interface Props {
@@ -36,6 +37,22 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin)
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 <link rel="manifest" href="/site.webmanifest" />
 <meta name="theme-color" content="#0B2150" />
+
+{
+    /*
+        Cookieless Cloudflare Web Analytics (ADR 0002): no cookies, no local storage, no
+        fingerprinting and no cross-site tracking, so no consent banner is needed. Only
+        production builds set the token, so previews and local development load nothing.
+    */
+    PUBLIC_CF_WEB_ANALYTICS_TOKEN && (
+        <script
+            is:inline
+            defer
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon={JSON.stringify({ token: PUBLIC_CF_WEB_ANALYTICS_TOKEN })}
+        />
+    )
+}
 
 <!--
     Paint the page background before the external stylesheet arrives, so dark mode doesn't

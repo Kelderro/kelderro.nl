@@ -30,6 +30,13 @@ export default defineConfig({
                 access: 'public',
                 default: false,
             }),
+            // Cookieless Cloudflare Web Analytics site token (ADR 0002). Rendered
+            // into the page at build time; without it the beacon is left out.
+            PUBLIC_CF_WEB_ANALYTICS_TOKEN: envField.string({
+                context: 'server',
+                access: 'public',
+                optional: true,
+            }),
         },
     },
 
