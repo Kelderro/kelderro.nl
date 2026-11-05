@@ -116,15 +116,20 @@ jobs:
     lighthouse:
         name: Lighthouse CI
         needs: build_and_deploy
-        # Requires a preview deployment (and Cloudflare Access secrets), so it
-        # can only run for non-Dependabot pull requests from this repository.
+        # On pull requests this audits the preview deployment, which needs the
+        # Cloudflare Access secrets, so it only runs for non-Dependabot pull
+        # requests from this repository. On pushes to main it audits the
+        # public production site, so merged changes (including Dependabot
+        # bumps) are still checked.
         if: >-
-            github.event_name == 'pull_request' &&
+            github.event_name == 'push' ||
+            (github.event_name == 'pull_request' &&
             github.actor != 'dependabot[bot]' &&
-            github.event.pull_request.head.repo.full_name == github.repository
+            github.event.pull_request.head.repo.full_name == github.repository)
         runs-on: ubuntu-latest
         env:
-            PREVIEW_URL: ${{ needs.build_and_deploy.outputs.preview_url }}
+            IS_PRODUCTION: ${{ github.event_name == 'push' }}
+            TARGET_URL: ${{ github.event_name == 'push' && 'https://kelderro.nl' || needs.build_and_deploy.outputs.preview_url }}
 
         steps:
             # Needed for the pnpm version (package.json) and Node version (.nvmrc).
@@ -139,10 +144,13 @@ jobs:
               with:
                   node-version-file: '.nvmrc'
 
-            - name: Create lighthouserc.json with Zero Trust Headers
-              # is-crawlable is disabled because Cloudflare Pages automatically adds
-              # 'noindex' headers to preview deployments, causing this audit to always
-              # fail in CI regardless of the actual site configuration.
+            - name: Create lighthouserc.json
+              # Preview config: sends the Zero Trust headers and disables
+              # is-crawlable, because Cloudflare Pages automatically adds
+              # 'noindex' headers to preview deployments, causing this audit to
+              # always fail regardless of the actual site configuration.
+              # Production is public and must be crawlable, so for pushes to main
+              # the headers are removed and is-crawlable is asserted again.
               run: |
                   cat << 'EOF' > lighthouserc.json
                   {
@@ -174,10 +182,15 @@ jobs:
                   }
                   EOF
 
+                  if [ "$IS_PRODUCTION" = "true" ]; then
+                    jq 'del(.ci.collect.settings.extraHeaders, .ci.collect.settings.skipAudits, .ci.assert.assertions["is-crawlable"])' \
+                      lighthouserc.json > lighthouserc.tmp && mv lighthouserc.tmp lighthouserc.json
+                  fi
+
             - name: Run Lighthouse CI
               run: |
                   pnpm dlx @lhci/cli autorun \
-                    --collect.url="$PREVIEW_URL" \
+                    --collect.url="$TARGET_URL" \
                     --upload.target=filesystem \
                     --upload.outputDir="./lhci-report"
 
@@ -189,13 +202,13 @@ jobs:
                   path: lhci-report
 
             - name: Comment Lighthouse results on PR
-              if: always()
+              if: always() && github.event_name == 'pull_request'
               uses: marocchino/sticky-pull-request-comment@v3
               with:
                   message: |
                       🔍 **Lighthouse CI Report**
 
-                      Preview URL: ${{ env.PREVIEW_URL }}
+                      Preview URL: ${{ env.TARGET_URL }}
 
                       A full Lighthouse report has been generated and uploaded as an artifact.
 
