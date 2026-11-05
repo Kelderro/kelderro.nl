@@ -53,6 +53,14 @@ export default defineConfig({
         '/contact': '/#contact',
     },
 
+    // The dev toolbar is pinned to the bottom of the viewport and intercepts
+    // clicks on elements underneath it, such as footer links on mobile. The
+    // Playwright web server sets CI, so the toolbar is off during E2E tests and
+    // stays on for normal local development.
+    devToolbar: {
+        enabled: !process.env.CI,
+    },
+
     integrations: [
         // Sentry is opt-in: without a DSN it would ship its SDK to every page while reporting nothing.
         // With SENTRY_AUTH_TOKEN/ORG/PROJECT also set, it uploads hidden source maps and deletes them from dist.
