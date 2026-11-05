@@ -63,16 +63,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin)
     };
     const isDark = getThemePreference() === 'dark';
     document.documentElement.classList[isDark ? 'add' : 'remove']('theme-dark');
-
-    if (typeof localStorage !== 'undefined') {
-        // Watch the document element and persist user preference when it changes.
-        const observer = new MutationObserver(() => {
-            const isDark = document.documentElement.classList.contains('theme-dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        });
-        observer.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ['class'],
-        });
-    }
+    // The preference is only stored when the visitor clicks the theme toggle
+    // (ThemeToggle.astro), never automatically. See ADR 0002.
 </script>
