@@ -1,7 +1,7 @@
 # 🚀 Portfolio & Business Website
 
-![Build Status](https://img.shields.io/github/actions/workflow/status/kelderro/website/ci.yml)
-![License](https://img.shields.io/github/license/kelderro/website)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/Kelderro/kelderro.nl/ci.yml?branch=main)](https://github.com/Kelderro/kelderro.nl/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/Kelderro/kelderro.nl)](LICENSE)
 ![Cloudflare Pages](https://img.shields.io/badge/Cloudflare-Pages-orange?logo=cloudflare)
 
 This is the portfolio and business website for my freelance technical consulting and principal engineering company. Built with [Astro](https://astro.build), it showcases my experience, skills, and services.
