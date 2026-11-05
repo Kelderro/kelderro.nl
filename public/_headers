@@ -16,7 +16,9 @@
 # astro.config.mjs, #155). Browsers enforce every policy they receive, so this
 # header must not set default-src, script-src or style-src: it would block the
 # hashed inline scripts. It only adds what applies to every response, and
-# frame-ancestors, which a <meta> tag cannot set.
+# frame-ancestors, which a <meta> tag cannot set. The page policy allows the
+# cookieless Cloudflare Web Analytics beacon (ADR 0002) only in builds where
+# PUBLIC_CF_WEB_ANALYTICS_TOKEN is set.
 
 /*
   Content-Security-Policy: object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
