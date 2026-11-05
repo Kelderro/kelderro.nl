@@ -30,6 +30,13 @@ export default defineConfig({
                 access: 'public',
                 default: false,
             }),
+            // Cookieless Cloudflare Web Analytics site token (ADR 0002). Rendered
+            // into the page at build time; without it the beacon is left out.
+            PUBLIC_CF_WEB_ANALYTICS_TOKEN: envField.string({
+                context: 'server',
+                access: 'public',
+                optional: true,
+            }),
         },
     },
 
@@ -44,6 +51,14 @@ export default defineConfig({
         '/about': '/#about',
         '/technical-toolkit': '/#technical-toolkit',
         '/contact': '/#contact',
+    },
+
+    // The dev toolbar is pinned to the bottom of the viewport and intercepts
+    // clicks on elements underneath it, such as footer links on mobile. The
+    // Playwright web server sets CI, so the toolbar is off during E2E tests and
+    // stays on for normal local development.
+    devToolbar: {
+        enabled: !process.env.CI,
     },
 
     integrations: [
