@@ -26,7 +26,6 @@
         "@astrojs/sitemap": "^3.7.4",
         "@sentry/astro": "^11.9.0",
         "@sentry/cloudflare": "^11.9.0",
-        "@spotlightjs/astro": "^3.2.6",
         "astro": "^7.4.2",
         "marked": "^18.1.2",
         "sharp": "^0.35.5"

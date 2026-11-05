@@ -14,7 +14,6 @@ This is the portfolio and business website for my freelance technical consulting
 - Responsive design and custom components
 - Cloudflare Pages deployment for global speed and reliability
 - Sentry integration for production error monitoring
-- Spotlight integration for local development debugging
 - DevContainer support for consistent development environments
 
 ## 🛠️ Development & Usage
@@ -81,7 +80,6 @@ pnpm run preview
 - **MDX Content**: All engagement content is written in MDX files under `src/content/`
 - **Cloudflare Pages**: Deployed globally for speed and reliability
 - **Sentry**: Enabled in production for error monitoring
-- **Spotlight**: Enabled in development for in-browser debugging
 - **DevContainer**: Ensures consistent, reproducible development environments
 
 ## 🌐 Deployment
