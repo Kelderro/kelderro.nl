@@ -179,10 +179,11 @@ jobs:
               # (LCP 2.5 s, CLS 0.1, TBT 200 ms) and page weight at roughly twice
               # the November 2026 baseline (91 KiB in 13 requests, 7.5 KiB of
               # script), so real regressions fail CI without flaky failures.
-              # At most two third-party requests are allowed: the cookieless
-              # Cloudflare Web Analytics beacon script and its report (ADR 0002).
-              # Any other tracker or third-party embed fails the build. Three
-              # runs reduce timing noise.
+              # At most three third-party requests are allowed, all from the
+              # cookieless Cloudflare Web Analytics beacon (ADR 0002): the
+              # script, its report to cloudflareinsights.com, and the CORS
+              # preflight for that report. Any other tracker or third-party
+              # embed fails the build. Three runs reduce timing noise.
               run: |
                   cat << 'EOF' > lighthouserc.json
                   {
@@ -217,7 +218,7 @@ jobs:
                           "resource-summary:total:count": ["error", { "maxNumericValue": 25 }],
                           "resource-summary:script:size": ["error", { "maxNumericValue": 30720 }],
                           "resource-summary:image:size": ["error", { "maxNumericValue": 122880 }],
-                          "resource-summary:third-party:count": ["error", { "maxNumericValue": 2 }]
+                          "resource-summary:third-party:count": ["error", { "maxNumericValue": 3 }]
                         }
                       }
                     }
