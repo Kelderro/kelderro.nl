@@ -8,3 +8,9 @@ allowBuilds:
 overrides:
     '@emnapi/core': 1.11.3
     '@emnapi/runtime': 1.11.3
+    # ESLint and typescript-eslint still request minimatch ^10; 11.0.1 fixes a denial of service
+    # (Dependabot alert #272). Scoped to these parents: glob 13 (via Sentry) finds no files with
+    # minimatch 11. Remove once they depend on ^11.
+    'eslint>minimatch': ^11.0.1
+    '@eslint/config-array>minimatch': ^11.0.1
+    '@typescript-eslint/typescript-estree>minimatch': ^11.0.1
