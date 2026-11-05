@@ -272,6 +272,14 @@ const categories: Category[] = [
         letter-spacing: -0.02em;
     }
 
+    /* White initials on the brand tile in both themes. Without this, the dark
+       theme logo rule above (.theme-dark .tech-icon) wins and sets an undefined
+       --logo-dark, so the initials fall back to the grey text colour, which
+       fails WCAG AA contrast on lighter tiles such as Azure DevOps. */
+    :global(.theme-dark) .text-icon {
+        color: #fff;
+    }
+
     .tech-name {
         font-size: var(--text-sm);
         color: var(--gray-200);
