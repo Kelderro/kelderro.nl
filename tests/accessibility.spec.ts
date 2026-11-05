@@ -36,6 +36,7 @@ const pages = [
     { name: 'home', path: '/' },
     { name: '404', path: '/this-page-does-not-exist' },
     { name: 'offline', path: '/offline/' },
+    { name: 'privacy', path: '/privacy/' },
     ...caseStudyPaths().map(path => ({ name: path, path })),
 ];
 
