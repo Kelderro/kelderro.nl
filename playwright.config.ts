@@ -29,15 +29,30 @@ export default defineConfig({
             use: { ...devices['Pixel 5'] },
         },
     ],
-    webServer: {
-        command: 'pnpm astro dev --port 4321 --host 127.0.0.1',
-        url: 'http://127.0.0.1:4321',
-        reuseExistingServer: !process.env.CI,
-        timeout: 120 * 1000,
-        stderr: 'pipe',
-        stdout: 'ignore',
-        env: {
-            CI: 'true',
+    webServer: [
+        {
+            command: 'pnpm astro dev --port 4321 --host 127.0.0.1',
+            url: 'http://127.0.0.1:4321',
+            reuseExistingServer: !process.env.CI,
+            timeout: 120 * 1000,
+            stderr: 'pipe',
+            stdout: 'ignore',
+            env: {
+                CI: 'true',
+            },
         },
-    },
+        {
+            // Production build for tests/csp.spec.ts: `astro dev` does not apply the
+            // Content-Security-Policy.
+            command: 'pnpm astro build && pnpm astro preview --port 4322 --host 127.0.0.1',
+            url: 'http://127.0.0.1:4322',
+            reuseExistingServer: !process.env.CI,
+            timeout: 180 * 1000,
+            stderr: 'pipe',
+            stdout: 'ignore',
+            env: {
+                CI: 'true',
+            },
+        },
+    ],
 });

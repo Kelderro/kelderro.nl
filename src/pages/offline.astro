@@ -14,13 +14,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                 <a href="/" class="nav-link">
                     ← Back to Home
                 </a>
-                <button type="button" class="nav-link" onclick="location.reload()">
+                <button type="button" class="nav-link" data-reload>
                     Try Again
                 </button>
             </nav>
         </main>
     </div>
 </BaseLayout>
+
+<script>
+    // A listener instead of an inline onclick, which the Content-Security-Policy blocks.
+    document
+        .querySelector('[data-reload]')
+        ?.addEventListener('click', () => window.location.reload());
+</script>
 
 <style>
     .offline-nav {

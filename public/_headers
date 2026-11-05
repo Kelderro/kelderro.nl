@@ -10,9 +10,16 @@
 #   abused, and the Content-Security-Policy below replaces it.
 # - Access-Control-Allow-Origin: Pages' default applies. The public site has
 #   no cross-origin API to protect.
+#
+# Content-Security-Policy: the script-src and style-src hashes differ per page,
+# so Astro emits that policy as a <meta> tag in every page (security.csp in
+# astro.config.mjs, #155). Browsers enforce every policy they receive, so this
+# header must not set default-src, script-src or style-src: it would block the
+# hashed inline scripts. It only adds what applies to every response, and
+# frame-ancestors, which a <meta> tag cannot set.
 
 /*
-  Content-Security-Policy: default-src 'self'; style-src 'unsafe-inline' 'self'; script-src 'self' 'unsafe-inline'
+  Content-Security-Policy: object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
