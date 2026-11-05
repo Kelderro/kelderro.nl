@@ -30,7 +30,7 @@ Before this decision the site already set no cookies and loaded no third-party r
 
 4. **Regression guards.**
     - `tests/privacy.spec.ts` fails when a page sets cookies or web storage, or makes third-party requests, without any visitor interaction. It also checks that the theme is only stored after a click.
-    - The Lighthouse budget `resource-summary:third-party:count` allows at most two third-party requests in production (the beacon script and its report). Adding any other tracker or embed fails CI.
+    - The Lighthouse budget `resource-summary:third-party:count` allows at most two third-party requests in production (the beacon script and its report). Adding any other tracker or embed fails CI. _Update 2026-11-06: raised to three, because the report also triggers a CORS preflight request to the same host._
 
 ## Consequences
 
