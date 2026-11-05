@@ -20,6 +20,8 @@ export const collections = {
                 department: z.string().optional(),
                 description: z.string(),
                 impact: z.string().optional(),
+                assignments: z.array(z.object({ name: z.string(), period: z.string() })).optional(),
+                stats: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
                 startDate: z.coerce.date().default(DEFAULT_DATE),
                 endDate: z.coerce.date().default(DEFAULT_DATE),
                 tags: z.array(z.string()),

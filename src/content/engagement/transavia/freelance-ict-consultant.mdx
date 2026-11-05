@@ -1,19 +1,35 @@
 ---
-mission: Embedded technical adviser at Transavia, the engineer other teams and the business turn to for connectivity, critical-role cover, and high-priority incidents
-position: Freelance Senior ICT Consultant
+mission: Fixed-term assignments for Transavia, from legacy modernisation to Azure to partner integration and a secure partner gateway
+position: Freelance Principal Technology Consultant
 startDate: 2023-04-15
 endDate: 2026-12-31
 img: airplane.webp
 imgAlt: Airplane flux - Created with OpenArt.ai
 description: |
-    Transavia, the Dutch airline within the Air France-KLM group, has partnered with Kelderro since 2023 as an embedded technical adviser: the point of contact other engineering teams and the business turn to for partner connectivity, critical-role cover, and high-priority production incidents, alongside hands-on Azure modernisation.
+    Transavia, the Dutch airline within the Air France-KLM group, engaged Kelderro for four fixed-term assignments, each with its own scope, deliverables and end date: two legacy AS-400 migrations to Azure, partner impact for a core reservation platform upgrade, and a secure partner gateway.
 impact: |
-    - Became the cross-team technical point of contact across 6 engineering teams and multiple business domains; engineers and business stakeholders came directly for architecture and connectivity advice, built over 3+ years
-    - Stepped into 6 critical roles when teams lost key people, covering tech lead (twice), architect, system designer, QA automation specialist and production owner while keeping hard deadlines and delivery on track
-    - Built secure integration endpoints connecting large travel integrators to Transavia's systems, partnering with the business and API/B2B partners on connectivity and onboarding across a large partner ecosystem
-    - First responder on production incidents affecting ticket sales (partners unable to buy or change tickets): root-caused and restored within hours, then added guard rails and process changes to prevent recurrence
-    - Delivered alongside the advisory work: modernised legacy AS-400 systems to Azure serverless (€48k/yr saved) and re-platformed crew compensation off a legacy system, partnering with the business to push its automation further into a predictable, hands-off process (and ~1 FTE)
-    - Drove Copilot/GenAI adoption and guided the Zero-Trust Azure migration with the CCoE
+    - Moved two critical systems off the AS-400 to Azure serverless before Transavia's last AS-400 programmer retired: crew compensation became a predictable, hands-off process, and replacing the crew review election tool enabled AS-400 decommissioning, saving €48k a year in mainframe run costs
+    - Assessed the partner impact of a core reservation platform upgrade and adapted the integration endpoints: breaking changes caught before go-live, zero partner outages
+    - Designed and built a partner gateway that limits each partner to its allowed endpoints, with in-depth request and response filtering and masking, moving the logic from API Management policies into a tested .NET service
+    - Delivered the gateway with a coding agent and presented the approach at Transavia's AI Guild, after which two tech leads requested a knowledge-sharing session so their own teams could adopt GenAI-assisted engineering
+assignments:
+    - name: Allowance payment system
+      period: Apr 2023 – Dec 2023
+    - name: Flight crew review election system
+      period: Jan 2024 – Apr 2024
+    - name: After-booking & reservation platform upgrade
+      period: May 2024 – 2025
+    - name: Partner gateway
+      period: '2026'
+stats:
+    - value: '4'
+      label: fixed-term assignments
+    - value: '0'
+      label: partner outages during platform upgrade
+    - value: €48k
+      label: saved per year
+    - value: '2'
+      label: legacy AS-400 systems moved to Azure
 location: Schiphol, The Netherlands
 selectedWork: true
 caseStudy: true
@@ -23,69 +39,62 @@ employerSite: https://www.transavia.com/
 sectorTitle: Aviation & Travel Sector
 sectorIcon: airplane-tilt
 tags:
-    - Technical Advisory
-    - Partner Connectivity
     - Azure Modernization
-    - Cross-team Delivery
+    - Partner Connectivity
+    - Integration Security
+    - GenAI Engineering
 ---
 
 ##### The engagement
 
-Rob op den Kelder has partnered with Transavia since April 2023 as an embedded technical adviser, the engineer other teams and the business turn to when connectivity, architecture or delivery is on the line. Over three years he has become a cross-team point of contact across six engineering teams and multiple business domains, with engineers and business stakeholders coming to him directly for advice.
+Transavia has engaged Kelderro for four fixed-term assignments since 2023, each with its own scope, deliverables and end date. It started with a single legacy migration, and each follow-up assignment was awarded on the strength of the one before.
 
-##### Critical-role coverage
-
-When teams lost key people, Kelderro stepped in to keep delivery and hard deadlines on track, covering senior roles end to end:
-
-- Tech lead (twice)
-- Architect
-- System designer, from architecture through to delivery
-- QA automation specialist
-- Production owner
-
-##### Partner connectivity & incident response
-
-Working hand in hand with the business and Transavia's API and B2B partners, Kelderro helped establish and troubleshoot connectivity and smooth partner onboarding across a large partner ecosystem.
-
-When high-priority production incidents struck (partners unable to buy or change tickets, directly impacting sales), Kelderro acted as first responder: calm, fast root-cause analysis to restore connectivity within hours, and never more than a day. Each incident was then closed out properly: finding the root cause and putting extra guard rails or process changes in place so the same failure could not happen again.
-
-##### Customer and Proposition
-
-_July 2024 - Current_
-
-An unexpected event was the reason for a technical team to be reduced in half by a matter of a day. Rob op den Kelder was informed about the situation and was up for the task to support this team as their was a hard deadline upcoming and Transavia was aware of the up-to-tempo speed that he has shown before.
-
-The team was in need of a technical leader who could assist the team in their and ensure quality.
-
-##### Technical advisor
-
-_May 2024 - Current_
-
-As part of a professional development group, Kelderro collaborate with the Customer and Proposition domain to transform after-booking technology in the airline industry. By enhancing post-booking experiences, helping partners of Transavia provide seamless interactions, improve customer satisfaction, and drive operational efficiency.
-
-Leveraging industry insights and technical expertise, Kelderro contribute to identifying emerging technologies, implementing innovative solutions, and aligning strategies with evolving customer expectations. Mainly focussed on delivering measurable value by optimizing processes and creating customer-centric systems tailored for success.
-
-##### Flight crew review election system
-
-_January 2024 - April 2024_
-
-Following the success of modernizing the allowance payment system, Kelderro was re-engaged by Transavia to transition another critical system from the legacy [IBM AS-400](https://en.wikipedia.org/wiki/IBM_AS/400) platform to an Azure-based cloud solution. This system automates the selection of flight crew for reviews or to be reviewed during flights, based on predefined criteria.
-
-Kelderro managed the full project lifecycle, including requirements engineering, architecture design, development, infrastructure setup, and post-delivery support. Collaborating closely with Transavia's stakeholders, Kelderro delivered a secure, scalable, and maintainable system tailored to meet operational needs.
-
-The new solution integrated seamlessly with Transavia’s existing systems, enhancing reliability, scalability, and compliance with industry standards. Post-deployment, Kelderro ensured a smooth transition through technical support and comprehensive onboarding.
-
-##### Allowance Payment System Modernization
+##### 2023 · Allowance payment system
 
 _April 2023 - December 2023_
 
-Kelderro partnered with Transavia to modernize their allowance payment system, transitioning from a legacy [IBM AS-400](https://en.wikipedia.org/wiki/IBM_AS/400) platform to a scalable, Azure-based cloud solution.
+**Challenge.** Crew allowances were calculated and paid from an [IBM AS-400](https://en.wikipedia.org/wiki/IBM_AS/400) system. It was expensive to run and relied on manual work to keep payments correct. More urgently, the knowledge to maintain it was disappearing: the last person at Transavia who could program the AS-400 was about to retire.
 
-Managing the full project lifecycle-requirement engineering, architecture, development, infrastructure setup, and post-delivery support-Kelderro delivered a secure, reliable, and future-ready system tailored to Transavia's operational needs.
+**Approach.** Rob gathered the requirements and worked closely with the subject-matter experts to understand which payments were being corrected by hand, and why. Together they reached agreement on rules that could replace those manual corrections, and Rob designed the solution that automates them. He owned the rest of the lifecycle too: architecture, development, infrastructure and post-delivery support, rebuilding the system on Azure serverless and integrating it with Transavia's existing systems.
 
-The new solution seamlessly integrated with existing systems, enhancing reliability, scalability, and compliance with industry standards. Kelderro ensured a smooth deployment and user onboarding with dedicated post-deployment support, empowering Transavia to achieve long-term operational efficiency.
+**Outcome.** Allowances are now calculated by the agreed rules instead of corrected by hand. That means fewer payment errors, a faster payroll cycle, and a clear trail showing how each crew member's allowance was calculated. Management gained insight into allowances through Power BI, and around one FTE of manual correction work was freed up. This first assignment also earned the ones that followed.
 
-#### Technology stack
+##### 2024 · Flight crew review election system
 
-- .NET Core 6, 8 and 9
-- Various Azure services
+_January 2024 - April 2024_
+
+**Challenge.** A second critical AS-400 system decides which flight crew review, or are reviewed, during flights, based on predefined criteria. It had to move off the legacy platform before that last AS-400 knowledge left the company, without interrupting operations.
+
+**Approach.** Rob took the same end-to-end ownership and rebuilt the tool as an event-driven Azure serverless solution (Event Grid, Functions, Storage). He worked closely with the maintainer of the old system, who until then had to intervene by hand, with subject-matter experts and with the cabin lead, until all of them confirmed that the new system applied the election rules correctly.
+
+**Outcome.** A secure, maintainable Azure solution, handed over with technical support and onboarding. With this last workload moved off, the AS-400 could be decommissioned, saving Transavia €48k a year in mainframe run costs.
+
+##### 2024 - 2025 · After-booking & reservation platform upgrade
+
+_May 2024 - 2025_
+
+**Challenge.** Transavia upgraded its core reservation platform, the system every partner booking runs through. Changes in its behaviour could break the API and B2B integrations that partners use to sell and change tickets after booking.
+
+**Approach.** Rob ran the partner impact analysis, mapping which changes would affect partner integrations. Where possible, he adapted Transavia's own integration endpoints so partners were shielded from the changes. Where partners did need to act, he briefed them and the business on what would change and when.
+
+**Outcome.** Breaking changes were caught and fixed before go-live, and partners kept selling and changing tickets through the upgrade with no outages.
+
+##### 2026 · Partner gateway
+
+_2026_
+
+**Challenge.** Large travel integrators connect directly to Transavia's reservation platform. Its API exposes far more operations and data than any single partner needs, and every extra field is data that can leak.
+
+**Approach.** Rob designed a smart wrapper in front of the reservation platform that limits each partner to the endpoints it is allowed to use. It filters and masks requests and responses in depth, so only the minimum information crosses the boundary. The first attempt used Azure API Management policies alone, but complex filtering logic in policies proved inflexible and hard to test. Rob moved that logic into a dedicated .NET service: partners call API Management, which handles the gateway concerns, and the .NET service applies the filtering and masking before anything reaches the reservation platform.
+
+**GenAI in practice.** Rob planned and built the service with a coding agent, using Matt Pocock's Wayfinder skill to plan work that ran over many sessions, where the route wasn't clear up front. He then presented the result to other teams and at Transavia's internal AI Guild, including the timeline and the steps they would need to take themselves. Showing a working example rather than a slide deck convinced two tech leads, who requested a knowledge-sharing session and some ad-hoc advice so their own teams could adopt the approach. A senior architect also took an interest in the material and asked to learn more.
+
+**Outcome.** Partners get a narrow, purpose-built API instead of the full platform. The filtering and masking rules live in tested code that can be changed with confidence.
+
+##### Technical decisions
+
+- **Durable Functions for allowance calculations.** Calculating and paying crew allowances is a long-running, multi-step batch. Durable Functions orchestrates it reliably on Azure Functions, without servers to run.
+- **The data store follows the data.** Each system got the store that fit its data shape: Azure SQL Database for one, Azure Cosmos DB for another. Where a database would have been overkill, simpler storage did the job: Blob Storage for exchanging information between systems, and Table Storage for tracking system state and keeping an audit trail of every run.
+- **.NET Aspire for the developer loop.** Aspire gives one-command local environments and built-in observability. Deployment to Azure stays on the regular pipelines.
+- **Code over gateway policies for complex logic.** API Management stays the front door for partner traffic, but request and response filtering moved into a .NET service where it can be unit-tested, versioned and evolved.
+- **No new single point of knowledge.** After an AS-400 that only one person could still maintain, the replacements were built on mainstream .NET and Azure services and kept on supported versions, so Transavia's own teams can maintain them.

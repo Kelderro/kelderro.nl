@@ -80,10 +80,14 @@ function formatPeriod(startDate: Date, endDate: Date): string {
                                 {entry.data.employer}
                             </a>
                         </div>
-                        <div class="meta-item">
-                            <Icon icon="calendar" size="1em" />
-                            <span>{formatPeriod(entry.data.startDate, entry.data.endDate)}</span>
-                        </div>
+                        {!entry.data.assignments && (
+                            <div class="meta-item">
+                                <Icon icon="calendar" size="1em" />
+                                <span>
+                                    {formatPeriod(entry.data.startDate, entry.data.endDate)}
+                                </span>
+                            </div>
+                        )}
                         <div class="meta-item">
                             <Icon icon="map-pin" size="1em" />
                             <span>{entry.data.location}</span>
@@ -93,6 +97,31 @@ function formatPeriod(startDate: Date, endDate: Date): string {
                             <span class="employment-badge">{entry.data.employment}</span>
                         </div>
                     </div>
+
+                    {entry.data.assignments && (
+                        <ol class="assignments" aria-label="Assignments">
+                            {entry.data.assignments.map(a => (
+                                <li>
+                                    <span class="assignment-period">
+                                        <Icon icon="calendar" size="1em" />
+                                        {a.period}
+                                    </span>
+                                    <span class="assignment-name">{a.name}</span>
+                                </li>
+                            ))}
+                        </ol>
+                    )}
+
+                    {entry.data.stats && (
+                        <dl class="stats">
+                            {entry.data.stats.map(s => (
+                                <div class="stat">
+                                    <dt>{s.label}</dt>
+                                    <dd>{s.value}</dd>
+                                </div>
+                            ))}
+                        </dl>
+                    )}
                 </div>
             </header>
             <main class="wrapper">
@@ -207,6 +236,75 @@ function formatPeriod(startDate: Date, endDate: Date): string {
         border-radius: 999rem;
         font-size: 0.8rem;
         color: var(--gray-400);
+    }
+
+    /* Assignment list */
+    .assignments {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        list-style: none;
+        margin: 0.5rem 0 0;
+        padding: 0;
+    }
+
+    .assignments li {
+        flex: 1 1 12rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--gray-800);
+        border-top: 3px solid var(--accent-regular);
+        border-radius: 0.5rem;
+    }
+
+    .assignment-period {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: var(--text-sm);
+        color: var(--gray-400);
+    }
+
+    .assignment-name {
+        color: var(--gray-200);
+        font-weight: 600;
+    }
+
+    /* Stat strip */
+    .stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1px;
+        margin: 0.5rem 0 0;
+        background: var(--gray-800);
+        border: 1px solid var(--gray-800);
+        border-radius: 0.75rem;
+        overflow: hidden;
+    }
+
+    .stat {
+        flex: 1 1 9rem;
+        display: flex;
+        flex-direction: column-reverse;
+        gap: 0.25rem;
+        padding: 1rem 1.25rem;
+        background: var(--gray-999);
+    }
+
+    .stat dd {
+        margin: 0;
+        font-family: var(--font-brand);
+        font-size: var(--text-2xl);
+        font-weight: 600;
+        line-height: 1.1;
+        color: var(--accent-regular);
+    }
+
+    .stat dt {
+        font-size: var(--text-sm);
+        color: var(--gray-300);
     }
 
     /* Impact callout */
