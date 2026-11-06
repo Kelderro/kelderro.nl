@@ -1,0 +1,146 @@
+# Cloudflare configuration as code with OpenTofu (ADR 0003).
+#
+# - Pull requests that touch infra/ get a plan, made with a read-only Cloudflare
+#   token, posted as a PR comment.
+# - Pushes to main apply the changes, with an edit token that only exists in
+#   the "infrastructure" environment, which only main can use.
+#
+# State and plans are encrypted client-side before they reach the R2 bucket.
+name: Infrastructure
+
+on:
+    pull_request:
+        paths:
+            - 'infra/**'
+            - '.github/workflows/infrastructure.yml'
+    push:
+        branches:
+            - main
+        paths:
+            - 'infra/**'
+            - '.github/workflows/infrastructure.yml'
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+# One OpenTofu run at a time, and never cancel one halfway through an apply.
+concurrency:
+    group: infrastructure
+    cancel-in-progress: false
+
+env:
+    TOFU_VERSION: '1.13.9'
+    TF_IN_AUTOMATION: 'true'
+    TF_INPUT: 'false'
+
+jobs:
+    plan:
+        name: OpenTofu plan
+        # Secrets aren't available to Dependabot or fork pull requests.
+        if: >-
+            github.event_name == 'pull_request' &&
+            github.actor != 'dependabot[bot]' &&
+            github.event.pull_request.head.repo.full_name == github.repository
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            # Posts the plan as a sticky comment on the pull request.
+            pull-requests: write
+        defaults:
+            run:
+                working-directory: infra
+        env:
+            AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+            TF_VAR_state_passphrase: ${{ secrets.TOFU_STATE_PASSPHRASE }}
+            # Read-only: a plan on a pull request can never change Cloudflare.
+            CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOFU_PLAN_TOKEN }}
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+
+            - name: Setup OpenTofu
+              uses: opentofu/setup-opentofu@a1320f892987e89d278cc92dc5adc984fb93aca4 # v2.0.2
+              with:
+                  tofu_version: ${{ env.TOFU_VERSION }}
+                  tofu_wrapper: false
+
+            - name: Check formatting
+              run: tofu fmt -check -recursive -diff
+
+            - name: Init
+              run: tofu init -lockfile=readonly
+
+            - name: Validate
+              run: tofu validate
+
+            - name: Plan
+              run: tofu plan -lock-timeout=120s -out=pr.tfplan
+
+            - name: Render plan for the PR comment
+              run: |
+                  tofu show -no-color pr.tfplan > plan.txt
+                  summary=$(grep -E '^(Plan:|No changes\.)' plan.txt | tail -1)
+                  {
+                    echo "### OpenTofu plan"
+                    echo
+                    echo "**${summary:-See the plan below.}**"
+                    echo
+                    echo "<details><summary>Full plan</summary>"
+                    echo
+                    echo '```hcl'
+                    # PR comments are limited to 65,536 characters.
+                    head -c 60000 plan.txt
+                    echo '```'
+                    echo
+                    echo "</details>"
+                    echo
+                    echo "_Planned with a read-only token. Changes are applied when this is merged to \`main\`._"
+                  } > plan.md
+                  cat plan.md >> "$GITHUB_STEP_SUMMARY"
+
+            - name: Comment plan on pull request
+              uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+              with:
+                  header: opentofu-plan
+                  path: infra/plan.md
+
+    apply:
+        name: OpenTofu apply
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        runs-on: ubuntu-latest
+        # The edit token only exists in this environment, which only main can use.
+        environment: infrastructure
+        defaults:
+            run:
+                working-directory: infra
+        env:
+            AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+            TF_VAR_state_passphrase: ${{ secrets.TOFU_STATE_PASSPHRASE }}
+            CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_TOFU_APPLY_TOKEN }}
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+
+            - name: Setup OpenTofu
+              uses: opentofu/setup-opentofu@a1320f892987e89d278cc92dc5adc984fb93aca4 # v2.0.2
+              with:
+                  tofu_version: ${{ env.TOFU_VERSION }}
+                  tofu_wrapper: false
+
+            - name: Init
+              run: tofu init -lockfile=readonly
+
+            - name: Plan
+              run: tofu plan -lock-timeout=120s -out=main.tfplan
+
+            - name: Apply
+              run: tofu apply -lock-timeout=120s main.tfplan
