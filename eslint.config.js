@@ -26,6 +26,8 @@ export default [
             '**/yarn.lock',
             '**/pnpm-lock.yaml',
             '.astro/**',
+            // Claude Code worktrees are full checkouts of this repository (#191).
+            '.claude/worktrees/',
         ],
     },
 
