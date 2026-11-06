@@ -32,6 +32,11 @@ pnpm-debug.log*
 !.vscode/tasks.json
 !.vscode/extensions.json
 
+# Claude Code: worktrees are full checkouts of this repository, and local settings are
+# per developer (#191)
+.claude/worktrees/
+.claude/settings.local.json
+
 # Cloudflare/Wrangler specific
 .wrangler
 .dev.vars

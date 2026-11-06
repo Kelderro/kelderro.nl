@@ -3,6 +3,7 @@ import type { CollectionEntry } from 'astro:content';
 import { getCollection } from 'astro:content';
 import Icon from './Icon.astro';
 import type { Props as IconProps } from './Icon.astro';
+import { formatDuration } from '../lib/duration';
 
 const engagements: CollectionEntry<'engagement'>[] = (await getCollection('engagement')).sort(
     (a: CollectionEntry<'engagement'>, b: CollectionEntry<'engagement'>) =>
@@ -15,17 +16,8 @@ function formatYear(d: Date) {
     return d.getFullYear().toString();
 }
 
-function formatDuration(startDate: Date, endDate: Date): string {
-    const effectiveEndDate = endDate > now ? now : endDate;
-    const totalMonths =
-        (effectiveEndDate.getFullYear() - startDate.getFullYear()) * 12 +
-        (effectiveEndDate.getMonth() - startDate.getMonth());
-    const years = Math.floor(totalMonths / 12);
-    const months = totalMonths % 12;
-    const parts: string[] = [];
-    if (years > 0) parts.push(`${years} yr${years !== 1 ? 's' : ''}`);
-    if (months > 0) parts.push(`${months} mo`);
-    return parts.join(' ') || '< 1 mo';
+function durationLabel(startDate: Date, endDate: Date): string {
+    return formatDuration(startDate, endDate > now ? now : endDate) || '< 1 mo';
 }
 
 function isCurrent(endDate: Date): boolean {
@@ -135,7 +127,7 @@ const industries: { icon: IconProps['icon']; label: string }[] = [
                                 ·
                             </span>
                             <span class="duration">
-                                {formatDuration(engagement.data.startDate, engagement.data.endDate)}
+                                {durationLabel(engagement.data.startDate, engagement.data.endDate)}
                             </span>
                         </span>
                         {engagement.data.caseStudy ? (
