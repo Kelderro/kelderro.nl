@@ -4,13 +4,15 @@ The Cloudflare configuration for kelderro.nl, managed with [OpenTofu](https://op
 
 ## What's managed
 
-| File                    | Resources                                                                 |
-| ----------------------- | ------------------------------------------------------------------------- |
-| `zone_settings.tf`      | Zone settings: Rocket Loader, email obfuscation, HTTPS and TLS, edge HSTS |
-| `managed_transforms.tf` | Managed Transforms for request and response headers                       |
-| `imports.tf`            | One-off `import` blocks that adopted the existing dashboard configuration |
+| File                    | Resources                                                                               |
+| ----------------------- | --------------------------------------------------------------------------------------- |
+| `zone_settings.tf`      | Zone settings: Rocket Loader, email obfuscation, HTTPS and TLS, edge HSTS               |
+| `managed_transforms.tf` | Managed Transforms for request and response headers                                     |
+| `response_headers.tf`   | Response header Transform Rule for every hostname except the apex                       |
+| `pages.tf`              | The Pages project: build settings and Git integration (CI deploys, Pages doesn't build) |
+| `imports.tf`            | One-off `import` blocks that adopt existing dashboard configuration                     |
 
-Still managed in the dashboard (to be brought under code in later pull requests): DNS records, the Pages project, the Access application for previews, the Web Analytics site, and the leftover Transform Rule and `www` headers.
+Still managed in the dashboard (to be brought under code in later pull requests): the website and email DNS records, the `www` redirect and the Web Analytics site. Homelab DNS records deliberately stay out of this public repository.
 
 ## How changes flow
 
