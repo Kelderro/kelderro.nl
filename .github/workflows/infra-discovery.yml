@@ -1,0 +1,87 @@
+# TEMPORARY: lists the Cloudflare resources still managed in the dashboard, so
+# they can be imported into OpenTofu (#158). Read-only token, no checkout.
+# The log is public, so personal values (Access policy emails) are never printed.
+# This workflow is not meant to be merged.
+name: Infrastructure discovery
+
+on:
+    pull_request:
+        paths:
+            - '.github/workflows/infra-discovery.yml'
+
+permissions:
+    contents: read
+
+jobs:
+    discover:
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        runs-on: ubuntu-latest
+        env:
+            CF_TOKEN: ${{ secrets.CLOUDFLARE_TOFU_PLAN_TOKEN }}
+            ACCOUNT: 9478ab7fe98bfec6eb4ca7824bfdc831
+            ZONE: 075c02da46a0ad23d3e756e391978331
+        steps:
+            - name: Discover resources
+              run: |
+                  api() {
+                    curl -sS -H "Authorization: Bearer $CF_TOKEN" "https://api.cloudflare.com/client/v4$1"
+                  }
+                  # Print the filtered result, or the API errors (e.g. missing permission).
+                  show() {
+                    local title=$1 path=$2 filter=$3
+                    echo "::group::$title"
+                    local body; body=$(api "$path")
+                    if [ "$(echo "$body" | jq -r '.success')" = "true" ]; then
+                      echo "$body" | jq "$filter"
+                    else
+                      echo "FAILED: $(echo "$body" | jq -c '.errors')"
+                    fi
+                    echo "::endgroup::"
+                  }
+
+                  show "DNS records" "/zones/$ZONE/dns_records?per_page=100" \
+                    '[.result[] | {id, type, name, content, proxied, ttl, priority}]'
+
+                  show "Zone rulesets" "/zones/$ZONE/rulesets" \
+                    '[.result[] | {id, phase, kind, name}]'
+
+                  for phase in http_response_headers_transform http_request_dynamic_redirect http_request_transform http_request_late_transform; do
+                    show "Ruleset entrypoint: $phase" "/zones/$ZONE/rulesets/phases/$phase/entrypoint" \
+                      '{id: .result.id, rules: [.result.rules[]? | {id, description, enabled, action, expression,
+                        headers: (.action_parameters.headers // {} | keys),
+                        redirect: .action_parameters.from_value}]}'
+                  done
+
+                  show "Page rules" "/zones/$ZONE/pagerules" \
+                    '[.result[] | {id, status, priority, targets, actions}]'
+
+                  show "Workers routes" "/zones/$ZONE/workers/routes" \
+                    '[.result[] | {id, pattern, script}]'
+
+                  show "Snippets" "/zones/$ZONE/snippets" \
+                    '[.result[]? | {snippet_name, created_on}]'
+
+                  show "Pages projects" "/accounts/$ACCOUNT/pages/projects" \
+                    '[.result[] | {name, subdomain, production_branch, domains,
+                      source: {type: .source.type, owner: .source.config.owner, repo: .source.config.repo_name,
+                               deployments_enabled: .source.config.deployments_enabled,
+                               production_deployments_enabled: .source.config.production_deployments_enabled,
+                               preview_deployment_setting: .source.config.preview_deployment_setting},
+                      build_config: .build_config,
+                      env_var_names: {production: (.deployment_configs.production.env_vars // {} | keys),
+                                      preview: (.deployment_configs.preview.env_vars // {} | keys)}}]'
+
+                  show "Access applications" "/accounts/$ACCOUNT/access/apps" \
+                    '[.result[] | {id, name, type, domain, self_hosted_domains, session_duration,
+                      policies: [.policies[]? | {id, name, decision, precedence, reusable,
+                        include: [.include[]? | keys[0]], exclude: [.exclude[]? | keys[0]], require: [.require[]? | keys[0]]}]}]'
+
+                  show "Access reusable policies" "/accounts/$ACCOUNT/access/policies" \
+                    '[.result[] | {id, name, decision, app_count,
+                      include: [.include[]? | keys[0]], exclude: [.exclude[]? | keys[0]], require: [.require[]? | keys[0]]}]'
+
+                  show "Access service tokens (names only)" "/accounts/$ACCOUNT/access/service_tokens" \
+                    '[.result[] | {id, name, expires_at}]'
+
+                  show "Web Analytics sites" "/accounts/$ACCOUNT/rum/site_info/list" \
+                    '[.result[] | {site_tag, host: .ruleset.zone_name, auto_install, created}]'
