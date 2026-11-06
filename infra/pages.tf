@@ -18,7 +18,7 @@ resource "cloudflare_pages_project" "website" {
     destination_dir = "dist"
     root_dir        = ""
     # Pages' built-in Web Analytics is off; the site loads the beacon itself
-    # (ADR 0002). Set explicitly so plans don't show it as a pending change.
+    # (ADR 0002).
     web_analytics_tag = ""
   }
 
@@ -30,9 +30,17 @@ resource "cloudflare_pages_project" "website" {
       production_branch              = "main"
       production_deployments_enabled = false
       preview_deployment_setting     = "all"
-      # Explicitly empty, matching the dashboard, so plans stay clean.
-      path_excludes           = []
-      preview_branch_excludes = []
     }
+  }
+
+  lifecycle {
+    # Optional fields that are unset in the dashboard (null) but that the
+    # provider treats as computed. Without this, every plan shows the project
+    # as changing. None of them are used.
+    ignore_changes = [
+      build_config.web_analytics_token,
+      source.config.path_excludes,
+      source.config.preview_branch_excludes,
+    ]
   }
 }
