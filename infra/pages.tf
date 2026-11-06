@@ -1,9 +1,12 @@
 # The Cloudflare Pages project for the website.
 #
-# GitHub Actions builds, tests and deploys every commit (ci.yml). The Pages Git
-# integration stays connected, but builds nothing itself: when it also
-# deployed main, its untested build replaced the one CI had checked, without
-# the analytics token. Preview builds are off for the same reason.
+# GitHub Actions builds, tests and deploys production (ci.yml). Pages' own
+# production builds stay off: when Pages also deployed main, its untested
+# build replaced the one CI had checked, without the analytics token.
+#
+# Pages still builds previews for every branch, as an independent check that
+# the site builds in Cloudflare's build environment as well as on GitHub's
+# runners. Those builds never reach production.
 resource "cloudflare_pages_project" "website" {
   account_id        = local.account_id
   name              = "kelderro-nl"
@@ -23,8 +26,7 @@ resource "cloudflare_pages_project" "website" {
       repo_name                      = "kelderro.nl"
       production_branch              = "main"
       production_deployments_enabled = false
-      # Changed from "all": only CI deploys previews.
-      preview_deployment_setting = "none"
+      preview_deployment_setting     = "all"
     }
   }
 }
