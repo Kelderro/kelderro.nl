@@ -31,3 +31,9 @@ updates:
               update-types:
                   - 'patch'
                   - 'minor'
+    - package-ecosystem: 'terraform'
+      directory: '/infra'
+      schedule:
+          interval: 'weekly'
+          day: 'saturday'
+      open-pull-requests-limit: 2
