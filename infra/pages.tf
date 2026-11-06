@@ -34,13 +34,18 @@ resource "cloudflare_pages_project" "website" {
   }
 
   lifecycle {
-    # Optional fields that are unset in the dashboard (null) but that the
-    # provider treats as computed. Without this, every plan shows the project
-    # as changing. None of them are used.
+    # deployment_configs (compatibility dates, the NODE_VERSION build variable,
+    # fail_open) is managed in the dashboard, not here. Leaving it out of the
+    # config isn't enough: the provider then proposes a value that differs from
+    # state (env_vars is not computed, and nested defaults such as
+    # fail_open = true replace the real values). The diff itself is hidden, but
+    # it makes the provider mark every unset computed attribute as
+    # "known after apply" (build_image_auto_upgrade, web_analytics_token, the
+    # exclude lists), so every plan shows the project as changing.
+    # Ignoring it keeps state's value in the proposal, so plans stay clean.
+    # https://github.com/cloudflare/terraform-provider-cloudflare/issues/7449
     ignore_changes = [
-      build_config.web_analytics_token,
-      source.config.path_excludes,
-      source.config.preview_branch_excludes,
+      deployment_configs,
     ]
   }
 }
