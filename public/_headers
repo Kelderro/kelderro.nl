@@ -11,12 +11,17 @@
 # - Access-Control-Allow-Origin: Pages' default applies. The public site has
 #   no cross-origin API to protect.
 #
-# The CSP allows the cookieless Cloudflare Web Analytics beacon (ADR 0002):
-# the script from static.cloudflareinsights.com and its report to
-# cloudflareinsights.com. Nothing else is loaded from or sent to third parties.
+# Content-Security-Policy: the script-src and style-src hashes differ per page,
+# so Astro emits that policy as a <meta> tag in every page (security.csp in
+# astro.config.mjs, #155). Browsers enforce every policy they receive, so this
+# header must not set default-src, script-src or style-src: it would block the
+# hashed inline scripts. It only adds what applies to every response, and
+# frame-ancestors, which a <meta> tag cannot set. The page policy allows the
+# cookieless Cloudflare Web Analytics beacon (ADR 0002) only in builds where
+# PUBLIC_CF_WEB_ANALYTICS_TOKEN is set.
 
 /*
-  Content-Security-Policy: default-src 'self'; style-src 'unsafe-inline' 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; connect-src 'self' https://cloudflareinsights.com
+  Content-Security-Policy: object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff

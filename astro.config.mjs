@@ -2,8 +2,28 @@ import { defineConfig, envField } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import sentry from '@sentry/astro';
 import sitemap from '@astrojs/sitemap';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+
+// Astro hashes the scripts and styles it bundles, but not `is:inline` ones. MainHead.astro
+// inlines these files verbatim, so hashing the same files keeps the policy in sync.
+const inlineHash = path =>
+    `sha256-${createHash('sha256')
+        .update(readFileSync(new URL(path, import.meta.url)))
+        .digest('base64')}`;
+
+// Third-party origins are only allowed when the build actually uses them.
+const analyticsEnabled = Boolean(process.env.PUBLIC_CF_WEB_ANALYTICS_TOKEN);
+const sentryOrigin = process.env.PUBLIC_SENTRY_DSN
+    ? new URL(process.env.PUBLIC_SENTRY_DSN).origin
+    : undefined;
+const connectSources = [
+    "'self'",
+    ...(analyticsEnabled ? ['https://cloudflareinsights.com'] : []),
+    ...(sentryOrigin ? [sentryOrigin] : []),
+];
 
 // Stamps a unique build id into dist/sw.js so each deploy invalidates the old caches.
 const serviceWorkerVersion = () => ({
@@ -37,6 +57,38 @@ export default defineConfig({
                 optional: true,
             }),
         },
+    },
+
+    // Content-Security-Policy as a <meta> tag per page, with hashes for every inline script
+    // and style instead of 'unsafe-inline' (#155). Directives a <meta> tag cannot set, such as
+    // frame-ancestors, are sent as a header from public/_headers. Not applied by `astro dev`.
+    security: {
+        csp: {
+            directives: [
+                "default-src 'self'",
+                `connect-src ${connectSources.join(' ')}`,
+                "object-src 'none'",
+                "base-uri 'self'",
+                "form-action 'self'",
+            ],
+            scriptDirective: {
+                resources: [
+                    "'self'",
+                    ...(analyticsEnabled ? ['https://static.cloudflareinsights.com'] : []),
+                ],
+                hashes: [inlineHash('./src/scripts/theme-init.js')],
+            },
+            styleDirective: {
+                // style="" attributes (brand colours in TechToolkit.astro) cannot be hashed.
+                resources: ["'self'", { resource: "'unsafe-inline'", kind: 'attribute' }],
+                hashes: [inlineHash('./src/styles/theme-init.css')],
+            },
+        },
+    },
+
+    // No Markdown code blocks are used, and Shiki's inline styles are incompatible with the CSP.
+    markdown: {
+        syntaxHighlight: false,
     },
 
     // Deployment Output

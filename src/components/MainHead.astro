@@ -1,6 +1,9 @@
 ---
 import { PUBLIC_CF_WEB_ANALYTICS_TOKEN } from 'astro:env/server';
 import '../styles/global.css';
+// Inlined verbatim; astro.config.mjs hashes the same files for the Content-Security-Policy.
+import themeInitScript from '../scripts/theme-init.js?raw';
+import themeInitStyle from '../styles/theme-init.css?raw';
 
 interface Props {
     title: string;
@@ -54,32 +57,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin)
     )
 }
 
-<!--
-    Paint the page background before the external stylesheet arrives, so dark mode doesn't
-    flash the browser's default white canvas. Colors mirror --gray-999 in global.css.
--->
+<!-- Theme background and dark-mode class, applied before first paint (see the files). -->
 <meta name="color-scheme" content="light dark" />
-<style is:inline>
-    :root {
-        color-scheme: light;
-        background-color: #ffffff;
-    }
-    :root.theme-dark {
-        color-scheme: dark;
-        background-color: #090b11;
-    }
-</style>
-
-<script is:inline>
-    // This code is inlined in the head to make dark mode instant & blocking.
-    const getThemePreference = () => {
-        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
-            return localStorage.getItem('theme');
-        }
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    };
-    const isDark = getThemePreference() === 'dark';
-    document.documentElement.classList[isDark ? 'add' : 'remove']('theme-dark');
-    // The preference is only stored when the visitor clicks the theme toggle
-    // (ThemeToggle.astro), never automatically. See ADR 0002.
-</script>
+<style is:inline set:html={themeInitStyle} />
+<script is:inline set:html={themeInitScript} />

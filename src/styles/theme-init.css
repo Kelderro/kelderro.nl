@@ -1,0 +1,12 @@
+/* Inlined in the head (MainHead.astro) to paint the page background before the
+   external stylesheet arrives, so dark mode doesn't flash the browser's default
+   white canvas. Colors mirror --gray-999 in global.css. astro.config.mjs hashes
+   this file for the Content-Security-Policy. */
+:root {
+    color-scheme: light;
+    background-color: #ffffff;
+}
+:root.theme-dark {
+    color-scheme: dark;
+    background-color: #090b11;
+}
