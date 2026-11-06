@@ -2,6 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
     testDir: './tests',
+    // Browserless unit tests run once, in the `unit` project, not in every browser.
+    testIgnore: '**/unit/**',
     fullyParallel: true,
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 0,
@@ -12,6 +14,11 @@ export default defineConfig({
         trace: 'on-first-retry',
     },
     projects: [
+        {
+            name: 'unit',
+            testMatch: '**/unit/**/*.spec.ts',
+            testIgnore: [],
+        },
         {
             name: 'chromium',
             use: { ...devices['Desktop Chrome'] },

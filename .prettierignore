@@ -7,3 +7,6 @@ dist/
 .astro/
 playwright-report/
 test-results/
+
+# Claude Code worktrees are full checkouts of this repository (#191)
+.claude/worktrees/
