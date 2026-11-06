@@ -1,18 +1,13 @@
-# Adopt the existing dashboard configuration instead of recreating it. Once the
-# first apply has imported these, the blocks are no-ops and can be removed.
+# Adopt existing dashboard configuration instead of recreating it. After the
+# apply that imports them, these blocks are no-ops and can be removed in a
+# later change. The zone settings and Managed Transforms were imported in #174.
 
 import {
-  for_each = local.zone_settings
-  to       = cloudflare_zone_setting.this[each.key]
-  id       = "${local.zone_id}/${each.key}"
+  to = cloudflare_ruleset.response_headers
+  id = "zones/${local.zone_id}/9c33ece0c6e7492c91bb74b7f6550bf0"
 }
 
 import {
-  to = cloudflare_zone_setting.security_header
-  id = "${local.zone_id}/security_header"
-}
-
-import {
-  to = cloudflare_managed_transforms.this
-  id = local.zone_id
+  to = cloudflare_pages_project.website
+  id = "${local.account_id}/kelderro-nl"
 }
