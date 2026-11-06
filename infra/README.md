@@ -10,9 +10,10 @@ The Cloudflare configuration for kelderro.nl, managed with [OpenTofu](https://op
 | `managed_transforms.tf` | Managed Transforms for request and response headers                                                  |
 | `response_headers.tf`   | Response header Transform Rule for every hostname except the apex                                    |
 | `pages.tf`              | The Pages project: build settings and Git integration (CI deploys production, Pages builds previews) |
+| `dns.tf`                | Website DNS (apex, wildcard, CAA) and email DNS (MX, SPF, DKIM, DMARC)                               |
 | `imports.tf`            | One-off `import` blocks that adopt existing dashboard configuration                                  |
 
-Still managed in the dashboard (to be brought under code in later pull requests): the website and email DNS records, the `www` redirect and the Web Analytics site. Homelab DNS records deliberately stay out of this public repository.
+Still managed in the dashboard (to be brought under code in later pull requests, #186): the `www` redirect and the Web Analytics site. Homelab DNS records deliberately stay out of this public repository. OpenTofu only manages the records in `dns.tf` and leaves the others alone.
 
 ## How changes flow
 
