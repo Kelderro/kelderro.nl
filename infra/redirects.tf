@@ -13,13 +13,18 @@ resource "cloudflare_ruleset" "redirects" {
 
   rules = [
     {
+      # Keeps the dashboard rule's ID, so updates change the rule in place.
+      ref         = "ac16e7b00a344a96b9ca73f6c019feaf"
       description = "Redirect to Kelderro.nl"
       enabled     = true
       expression  = "(not ip.src in {${join(" ", var.redirect_bypass_ips)}} and not http.host in {\"kelderro.nl\"})"
       action      = "redirect"
       action_parameters = {
         from_value = {
-          status_code           = 302
+          status_code = 302
+          # The dashboard rule leaves this unset, which Cloudflare treats as
+          # false. The provider always sends false, so the import apply shows
+          # it as added once, with no change in behaviour.
           preserve_query_string = false
           target_url = {
             value = "https://kelderro.nl"
