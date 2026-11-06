@@ -1,0 +1,5 @@
+# OpenTofu working files (state and plans live encrypted in R2)
+.terraform/
+*.tfplan
+plan.txt
+plan.md
