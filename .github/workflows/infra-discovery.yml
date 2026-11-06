@@ -1,0 +1,50 @@
+# TEMPORARY: finds how the www -> apex redirect is configured, so it can be
+# imported into OpenTofu (#186). Read-only token, no checkout. Not meant to be
+# merged.
+name: Infrastructure discovery
+
+on:
+    pull_request:
+        paths:
+            - '.github/workflows/infra-discovery.yml'
+
+permissions:
+    contents: read
+
+jobs:
+    discover:
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        runs-on: ubuntu-latest
+        env:
+            CF_TOKEN: ${{ secrets.CLOUDFLARE_TOFU_PLAN_TOKEN }}
+            ACCOUNT: 9478ab7fe98bfec6eb4ca7824bfdc831
+            ZONE: 075c02da46a0ad23d3e756e391978331
+        steps:
+            - name: Discover the www redirect
+              run: |
+                  api() {
+                    curl -sS -H "Authorization: Bearer $CF_TOKEN" "https://api.cloudflare.com/client/v4$1"
+                  }
+                  show() {
+                    local title=$1 path=$2 filter=$3
+                    echo "::group::$title"
+                    local body; body=$(api "$path")
+                    if [ "$(echo "$body" | jq -r '.success')" = "true" ]; then
+                      echo "$body" | jq "$filter"
+                    else
+                      echo "FAILED: $(echo "$body" | jq -c '.errors')"
+                    fi
+                    echo "::endgroup::"
+                  }
+
+                  show "Zone rulesets" "/zones/$ZONE/rulesets" \
+                    '[.result[] | {id, phase, kind, name}]'
+
+                  show "Single Redirect entrypoint" "/zones/$ZONE/rulesets/phases/http_request_dynamic_redirect/entrypoint" \
+                    '.result | {id, name, description, kind, phase, rules: [.rules[]? | {id, ref, description, enabled, expression, action, action_parameters}]}'
+
+                  show "Page rules" "/zones/$ZONE/pagerules" \
+                    '[.result[] | {id, status, priority, targets, actions}]'
+
+                  show "Account rulesets (bulk redirects)" "/accounts/$ACCOUNT/rulesets" \
+                    '[.result[] | {id, phase, kind, name}]'
