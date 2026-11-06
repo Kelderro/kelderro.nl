@@ -29,3 +29,8 @@ import {
   to = cloudflare_dns_record.caa
   id = "${local.zone_id}/7e842d44cff687c17f76e50d498e21a7"
 }
+
+import {
+  to = cloudflare_ruleset.redirects
+  id = "zones/${local.zone_id}/1b11465312b04da68e23a069e7e4e5a8"
+}
