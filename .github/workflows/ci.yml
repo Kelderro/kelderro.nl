@@ -124,11 +124,11 @@ jobs:
     lighthouse:
         name: Lighthouse CI
         needs: build_and_deploy
-        # On pull requests this audits the preview deployment, which needs the
-        # Cloudflare Access secrets, so it only runs for non-Dependabot pull
-        # requests from this repository. On pushes to main it audits the
-        # public production site, so merged changes (including Dependabot
-        # bumps) are still checked.
+        # On pull requests this audits the preview deployment, which only exists
+        # for non-Dependabot pull requests from this repository (the deploy
+        # needs Cloudflare secrets). On pushes to main it audits the public
+        # production site, so merged changes (including Dependabot bumps) are
+        # still checked. Previews are public, so no credentials are needed.
         if: >-
             github.event_name == 'push' ||
             (github.event_name == 'pull_request' &&
@@ -163,17 +163,13 @@ jobs:
               # different value is only a warning while a Cloudflare dashboard
               # rule may still override the file (see #154).
               run: node scripts/check-security-headers.mjs "$TARGET_URL" ${{ github.event_name == 'pull_request' && '--exact' || '' }}
-              env:
-                  CF_ACCESS_CLIENT_ID: ${{ github.event_name == 'pull_request' && secrets.CF_ACCESS_CLIENT_ID || '' }}
-                  CF_ACCESS_CLIENT_SECRET: ${{ github.event_name == 'pull_request' && secrets.CF_ACCESS_CLIENT_SECRET || '' }}
 
             - name: Create lighthouserc.json
-              # Preview config: sends the Zero Trust headers and disables
-              # is-crawlable, because Cloudflare Pages automatically adds
-              # 'noindex' headers to preview deployments, causing this audit to
-              # always fail regardless of the actual site configuration.
-              # Production is public and must be crawlable, so for pushes to main
-              # the headers are removed and is-crawlable is asserted again.
+              # Preview config: disables is-crawlable, because Cloudflare Pages
+              # automatically adds 'noindex' headers to preview deployments,
+              # causing this audit to always fail regardless of the actual site
+              # configuration. Production is public and must be crawlable, so
+              # for pushes to main is-crawlable is asserted again.
               #
               # Budgets (see #159): Core Web Vitals at Google's "good" thresholds
               # (LCP 2.5 s, CLS 0.1, TBT 200 ms) and page weight at roughly twice
@@ -191,10 +187,6 @@ jobs:
                       "collect": {
                         "numberOfRuns": 3,
                         "settings": {
-                          "extraHeaders": {
-                            "CF-Access-Client-Id": "${{ secrets.CF_ACCESS_CLIENT_ID }}",
-                            "CF-Access-Client-Secret": "${{ secrets.CF_ACCESS_CLIENT_SECRET }}"
-                          },
                           "skipAudits": ["is-crawlable"]
                         }
                       },
@@ -226,7 +218,7 @@ jobs:
                   EOF
 
                   if [ "$IS_PRODUCTION" = "true" ]; then
-                    jq 'del(.ci.collect.settings.extraHeaders, .ci.collect.settings.skipAudits, .ci.assert.assertions["is-crawlable"])' \
+                    jq 'del(.ci.collect.settings.skipAudits, .ci.assert.assertions["is-crawlable"])' \
                       lighthouserc.json > lighthouserc.tmp && mv lighthouserc.tmp lighthouserc.json
                   fi
 

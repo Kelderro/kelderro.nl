@@ -9,9 +9,6 @@
 //   default  Every header must be present. A different value is reported as a
 //            warning, not a failure. Used for production, where a dashboard
 //            rule may still override the file during the migration.
-//
-// Cloudflare Access service token headers are sent when CF_ACCESS_CLIENT_ID
-// and CF_ACCESS_CLIENT_SECRET are set, so protected previews can be checked.
 
 import { readFile } from 'node:fs/promises';
 
@@ -53,15 +50,7 @@ if (expected.length === 0) {
     process.exit(2);
 }
 
-const accessHeaders =
-    process.env.CF_ACCESS_CLIENT_ID && process.env.CF_ACCESS_CLIENT_SECRET
-        ? {
-              'CF-Access-Client-Id': process.env.CF_ACCESS_CLIENT_ID,
-              'CF-Access-Client-Secret': process.env.CF_ACCESS_CLIENT_SECRET,
-          }
-        : {};
-
-const response = await fetch(url, { headers: accessHeaders, redirect: 'manual' });
+const response = await fetch(url, { redirect: 'manual' });
 console.log(`${url} → HTTP ${response.status} (${exact ? 'exact' : 'presence'} check)`);
 
 let failures = 0;
