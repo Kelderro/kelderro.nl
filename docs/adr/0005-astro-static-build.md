@@ -8,7 +8,7 @@
 
 The site is a portfolio and business website: a homepage, case studies written in MDX under `src/content/`, a privacy statement and a few redirects. Nothing on it depends on who the visitor is or on data that changes between requests.
 
-It started from the [Astro portfolio starter kit](https://github.com/withastro/astro/tree/latest/examples/portfolio) in February 2023. Astro was chosen for three reasons, in order of weight:
+It started from the [Astro portfolio starter kit](https://github.com/withastro/astro/tree/latest/examples/portfolio) in February 2023. Before this site I had built front ends with AngularJS (Angular 1) and React. Astro was partly a deliberate choice to explore something different, and it looked like a good fit for what the site needed at the time. It was chosen for three reasons, in order of weight:
 
 1. **Performance.** Astro compiles pages to lightweight HTML and CSS and strips out JavaScript that a page doesn't need, instead of shipping a client-side framework to every visitor.
 2. **Built-in content management with MDX.** Content collections and MDX make it easy to maintain the previous engagements and the history of my career as content files, separate from the components that render them.
@@ -43,6 +43,15 @@ Several other choices depend on this:
 - The CSP still allows inline `style=""` attributes, because Astro can't hash them (brand colours in `TechToolkit.astro`).
 - Shiki syntax highlighting is turned off, because its inline styles conflict with the CSP. No Markdown code blocks are used, so this costs nothing today.
 
+### Review, November 2026
+
+Still a good fit. Development has felt faster than in React, with fewer libraries. The parts of that which can be measured hold up:
+
+- **Shipped JavaScript.** The production build ships about 5 KB of JavaScript in total: a 2.5 KB page script (1.1 KB gzipped) and the 2.5 KB service worker. No UI framework runtime reaches the browser, and no component uses a `client:` directive. For comparison, a minimal React 19 app that only renders one heading bundles to about 220 KB minified (about 69 KB gzipped) with esbuild, before any routing or content code.
+- **Fewer libraries.** `package.json` has seven runtime dependencies: `astro`, `@astrojs/mdx`, `@astrojs/sitemap`, `sharp` (image optimisation), `marked` (Markdown in engagement front matter), and `@sentry/astro` and `@sentry/cloudflare`. Routing, static generation, content collections with schema validation, image optimisation, redirects, prefetching and CSP hashing are built into Astro. A plain React setup would need a separate library for most of these (a router, a static-site or server framework, an MDX loader, head management, image tooling). A full React framework such as Next.js would build many of them in too, so the advantage is largest against React on its own.
+- **Faster development** is my experience, not something the repository can measure.
+
 ## Alternatives considered
 
-No alternatives were recorded when Astro was chosen in 2023. Astro's server output (`output: 'server'`) was never used: nothing on the site needs it.
+- **React or AngularJS**, which I had used before: rejected in favour of trying something different that fitted the site, and because they ship a framework runtime to every visitor of a mostly static site.
+- Astro's server output (`output: 'server'`) was never used: nothing on the site needs it.

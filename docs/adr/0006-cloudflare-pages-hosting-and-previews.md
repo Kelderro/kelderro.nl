@@ -8,6 +8,11 @@
 
 The static build (ADR 0005) needs a host that serves `dist/` with the security headers from `public/_headers`, and a way to look at a change before it is live. Cloudflare already serves the domain and its DNS (ADR 0003), and its Web Analytics is the only analytics on the site (ADR 0002).
 
+Cloudflare Pages was chosen mainly for two reasons:
+
+1. **Speed.** Pages serves the static files from Cloudflare's global edge network, close to every visitor. For a static site that is very hard to beat.
+2. **HTTPS without maintenance.** Cloudflare issues and renews the TLS certificate for the domain automatically, so there is no certificate to track or renew by hand. The zone itself enforces HTTPS (`always_use_https`, `ssl = "strict"` and TLS 1.2 as the minimum in `infra/zone_settings.tf`), and HSTS is sent from `public/_headers`.
+
 Pages can build and deploy a site itself through its GitHub integration. That turned out to be a problem for production: when Pages also deployed `main`, its build replaced the one CI had tested, and it was built without the analytics token (ADR 0003, `infra/pages.tf`).
 
 ## Decision
@@ -24,6 +29,7 @@ The site is hosted on the Cloudflare Pages project `kelderro-nl`, managed with O
 
 **Good**
 
+- Pages are served fast from the edge, and certificates renew themselves.
 - One host and one vendor for DNS, the site, its headers and its analytics, so no new processor of visitor data (ADR 0002).
 - Every pull request from this repository gets a public preview URL, which is what Lighthouse and the header check run against.
 - Production is always the tested build from CI.
