@@ -14,7 +14,7 @@ function fields(body: string): Map<string, string[]> {
     return result;
 }
 
-test('security.txt is served and follows RFC 9116', async ({ request }) => {
+test('security.txt is served and follows RFC 9116', { tag: '@smoke' }, async ({ request }) => {
     const response = await request.get('/.well-known/security.txt');
     expect(response.status()).toBe(200);
     expect(response.headers()['content-type']).toMatch(/^text\/plain/);
@@ -29,7 +29,7 @@ test('security.txt is served and follows RFC 9116', async ({ request }) => {
     expect(parsed.get('preferred-languages')).toEqual(['en, nl']);
 });
 
-test('security.txt does not expire soon', async ({ request }) => {
+test('security.txt does not expire soon', { tag: '@smoke' }, async ({ request }) => {
     const body = await (await request.get('/.well-known/security.txt')).text();
     const expires = new Date(fields(body).get('expires')![0]);
     const daysLeft = (expires.getTime() - Date.now()) / 86_400_000;

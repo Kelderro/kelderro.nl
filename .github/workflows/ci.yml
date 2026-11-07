@@ -11,16 +11,34 @@ on:
 permissions:
     contents: read
 
+# Pushes to main deploy, smoke-test and possibly roll back production, so they
+# run one at a time, and never at the same time as the manual "Rollback
+# production" workflow (rollback.yml), which uses the same group. Otherwise a
+# rollback could replace a newer deploy. Pull request runs are not limited.
+concurrency:
+    group: ${{ github.event_name == 'push' && 'production' || format('ci-{0}', github.run_id) }}
+    cancel-in-progress: false
+
 jobs:
     build_and_deploy:
         name: Build and Deploy
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            # Reads the "Cloudflare Pages" check run for Dependabot pull requests.
+            checks: read
 
         env:
             CURRENT_BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
 
         outputs:
-            preview_url: ${{ steps.deploy.outputs.deployment-url }}
+            # The deployment that Lighthouse and the smoke tests check: CI's own
+            # preview, or for Dependabot pull requests the preview that Pages'
+            # Git integration built.
+            preview_url: ${{ steps.deploy.outputs.deployment-url || steps.pages_preview.outputs.url }}
+            # The production deployment that was live before this deploy, which
+            # "Roll back production" restores when the smoke tests fail.
+            live_deployment_id: ${{ steps.live.outputs.deployment_id }}
 
         steps:
             - name: Checkout repository
@@ -62,6 +80,17 @@ jobs:
                   # the beacon is left out entirely.
                   PUBLIC_CF_WEB_ANALYTICS_TOKEN: ${{ github.event_name == 'push' && vars.CF_WEB_ANALYTICS_TOKEN || '' }}
 
+            - name: Record the live production deployment
+              id: live
+              if: github.event_name == 'push'
+              # Without it a rollback still works: it falls back to the newest
+              # successful production deployment before the live one.
+              continue-on-error: true
+              run: node scripts/pages-production.mjs live
+              env:
+                  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
             # Preview deployments require Cloudflare secrets, which are not
             # available to Dependabot or fork pull requests. Skip the deploy in
             # those cases so the required "Build and Deploy" check can still pass.
@@ -79,6 +108,50 @@ jobs:
               env:
                   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+            # Dependabot pull requests get no secrets, so CI can't deploy a
+            # preview for them. Pages' own Git integration builds one anyway
+            # (preview_deployment_setting = "all" in infra/pages.tf), on
+            # Cloudflare's side, and reports it as the "Cloudflare Pages" check
+            # run. Its URL lets Lighthouse and the smoke tests check the update
+            # on Cloudflare before auto-merge. This tests Cloudflare's build
+            # (npm run build), not the dist/ above (ADR 0011). Fork pull
+            # requests get no preview at all, and no workflow may run fork code
+            # with secrets (pull_request_target).
+            - name: Find the Cloudflare Pages preview
+              id: pages_preview
+              if: >-
+                  steps.deploy.outcome == 'skipped' &&
+                  github.event_name == 'pull_request' &&
+                  github.event.pull_request.head.repo.full_name == github.repository
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+              run: |
+                  check_run() {
+                    gh api "repos/$GITHUB_REPOSITORY/commits/$HEAD_SHA/check-runs?check_name=Cloudflare%20Pages" \
+                      --jq "[.check_runs[] | select(.app.slug == \"cloudflare-workers-and-pages\")] | first // empty | $1"
+                  }
+                  # Wait up to 20 minutes for Pages to build the head commit.
+                  for _ in $(seq 40); do
+                    status=$(check_run .status)
+                    [ "$status" = completed ] && break
+                    echo "Cloudflare Pages check: ${status:-not started yet}. Waiting..."
+                    sleep 30
+                  done
+                  if [ "$status" != completed ]; then
+                    echo "::error::The Cloudflare Pages check did not complete for $HEAD_SHA."
+                    exit 1
+                  fi
+                  conclusion=$(check_run .conclusion)
+                  if [ "$conclusion" != success ]; then
+                    echo "::error::The Cloudflare Pages preview build concluded: $conclusion."
+                    exit 1
+                  fi
+                  # The commit's own preview URL, not the branch alias.
+                  url=$(check_run '.output.summary | capture("(?s)<strong>Preview URL:</strong>.*?(?<u>https://[a-z0-9.-]+[.]pages[.]dev)").u')
+                  echo "Cloudflare Pages preview: $url"
+                  echo "url=$url" >> "$GITHUB_OUTPUT"
 
     e2e:
         name: E2E tests
@@ -124,16 +197,14 @@ jobs:
     lighthouse:
         name: Lighthouse CI
         needs: build_and_deploy
-        # On pull requests this audits the preview deployment, which only exists
-        # for non-Dependabot pull requests from this repository (the deploy
-        # needs Cloudflare secrets). On pushes to main it audits the public
-        # production site, so merged changes (including Dependabot bumps) are
-        # still checked. Previews are public, so no credentials are needed.
+        # On pull requests this audits the preview deployment: CI's own, or for
+        # Dependabot the one Pages' Git integration built. Fork pull requests
+        # have no preview, so this is skipped for them. On pushes to main it
+        # audits the public production site. Previews are public, so no
+        # credentials are needed.
         if: >-
             github.event_name == 'push' ||
-            (github.event_name == 'pull_request' &&
-            github.actor != 'dependabot[bot]' &&
-            github.event.pull_request.head.repo.full_name == github.repository)
+            github.event.pull_request.head.repo.full_name == github.repository
         runs-on: ubuntu-latest
         permissions:
             contents: read
@@ -237,7 +308,8 @@ jobs:
                   path: lhci-report
 
             - name: Comment Lighthouse results on PR
-              if: always() && github.event_name == 'pull_request'
+              # Dependabot's token is read-only, so it can't comment.
+              if: always() && github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
               uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
               with:
                   message: |
@@ -252,3 +324,125 @@ jobs:
                       - Accessibility  
                       - Best Practices  
                       - SEO
+
+    smoke:
+        name: Smoke tests
+        needs: build_and_deploy
+        # The @smoke Playwright tests against the deployment (ADR 0011): the
+        # preview on pull requests (CI's own, or Pages' for Dependabot), and
+        # production on pushes to main. Skipped for fork pull requests, which
+        # have no preview. No secrets: previews and production are public.
+        if: >-
+            github.event_name == 'push' ||
+            github.event.pull_request.head.repo.full_name == github.repository
+        runs-on: ubuntu-latest
+        env:
+            PLAYWRIGHT_BASE_URL: ${{ github.event_name == 'push' && 'https://kelderro.nl' || needs.build_and_deploy.outputs.preview_url }}
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+            - name: Setup Node.js
+              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+              with:
+                  node-version-file: '.nvmrc'
+                  cache: 'pnpm'
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Install Playwright browsers
+              run: pnpm exec playwright install --with-deps chromium
+
+            # Each failing test is retried twice (playwright.config.ts). In
+            # production a failed run gets a second full run a minute later, so
+            # only a consistent failure fails this job and rolls production back.
+            - name: Run smoke tests
+              id: smoke
+              continue-on-error: ${{ github.event_name == 'push' }}
+              run: pnpm exec playwright test
+              env:
+                  CI: true
+
+            - name: Run smoke tests again
+              if: steps.smoke.outcome == 'failure'
+              run: |
+                  sleep 60
+                  pnpm exec playwright test
+              env:
+                  CI: true
+
+            - name: Upload Playwright report
+              if: failure() || steps.smoke.outcome == 'failure'
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+              with:
+                  name: smoke-test-report
+                  path: playwright-report/
+                  retention-days: 7
+
+    rollback:
+        name: Roll back production
+        needs: [build_and_deploy, smoke]
+        # Only a consistent smoke-test failure in production triggers this,
+        # never Lighthouse: lab timings are too noisy (ADR 0011). The run stays
+        # failed, and the fix goes through a normal pull request.
+        if: >-
+            failure() &&
+            github.event_name == 'push' &&
+            needs.build_and_deploy.result == 'success' &&
+            needs.smoke.result == 'failure'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            # Opens or updates the issue that reports the rollback.
+            issues: write
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            - name: Setup Node.js
+              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+              with:
+                  node-version-file: '.nvmrc'
+
+            - name: Roll back to the deployment that was live before
+              id: rollback
+              run: node scripts/pages-production.mjs rollback "$LIVE_DEPLOYMENT_ID"
+              env:
+                  LIVE_DEPLOYMENT_ID: ${{ needs.build_and_deploy.outputs.live_deployment_id }}
+                  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+            - name: Open or update the rollback issue
+              if: always()
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  OUTCOME: ${{ steps.rollback.outcome }}
+                  DEPLOYMENT_ID: ${{ steps.rollback.outputs.deployment_id }}
+                  DEPLOYMENT_COMMIT: ${{ steps.rollback.outputs.commit }}
+                  DEPLOYMENT_URL: ${{ steps.rollback.outputs.url }}
+                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              run: |
+                  title='Production was rolled back automatically'
+                  if [ "$OUTCOME" = success ]; then
+                    live="Deployment \`$DEPLOYMENT_ID\` (commit $DEPLOYMENT_COMMIT) is live again: $DEPLOYMENT_URL"
+                  else
+                    live='**The rollback failed, so the failing deployment is still live.** Roll back by hand with the "Rollback production" workflow (see the README).'
+                  fi
+                  body="Commit $GITHUB_SHA went live and failed the smoke tests: $RUN_URL
+
+                  $live
+
+                  \`main\` is now ahead of production. Fix or revert it in a normal pull request. The next deploy that passes the smoke tests replaces the rolled-back version. See ADR 0011 and the rollback runbook in the README."
+                  issue=$(gh issue list --state open --search "in:title \"$title\"" --json number,title \
+                    --jq "map(select(.title == \"$title\")) | first | .number // empty")
+                  if [ -n "$issue" ]; then
+                    gh issue comment "$issue" --body "$body"
+                  else
+                    gh issue create --title "$title" --body "$body"
+                  fi
