@@ -8,11 +8,17 @@
 
 The site is a portfolio and business website: a homepage, case studies written in MDX under `src/content/`, a privacy statement and a few redirects. Nothing on it depends on who the visitor is or on data that changes between requests.
 
-It started from the [Astro portfolio starter kit](https://github.com/withastro/astro/tree/latest/examples/portfolio) in February 2023. No written rationale for choosing Astro was kept from that time. The reasons below are the ones that the current configuration relies on.
+It started from the [Astro portfolio starter kit](https://github.com/withastro/astro/tree/latest/examples/portfolio) in February 2023. Astro was chosen for three reasons, in order of weight:
+
+1. **Performance.** Astro compiles pages to lightweight HTML and CSS and strips out JavaScript that a page doesn't need, instead of shipping a client-side framework to every visitor.
+2. **Built-in content management with MDX.** Content collections and MDX make it easy to maintain the previous engagements and the history of my career as content files, separate from the components that render them.
+3. **Framework-agnostic.** Components from other UI frameworks can be used where they're needed. This was a bonus rather than a deciding factor, and the site doesn't currently use any.
 
 ## Decision
 
 The site is built with Astro using `output: 'static'` (`astro.config.mjs`). `pnpm build` produces plain HTML, CSS, a small amount of JavaScript and optimised images in `dist/`, and that folder is all that is deployed. There is no server-side rendering and no server runtime in production.
+
+Engagements are MDX files in a content collection under `src/content/`, rendered by Astro components.
 
 Several other choices depend on this:
 
