@@ -13,7 +13,6 @@ This is the portfolio and business website for my freelance technical consulting
 - Content-driven: MDX for engagements
 - Responsive design and custom components
 - Cloudflare Pages deployment for global speed and reliability
-- Opt-in Sentry error monitoring (only bundled when a DSN is configured)
 - DevContainer support for consistent development environments
 
 ## 🛠️ Development & Usage
@@ -96,7 +95,7 @@ flowchart LR
 - **Cloudflare Pages.** CI builds once and deploys that build. Pages' own production builds are off. Pages still builds previews as an extra check. Dependabot and fork pull requests get no preview, because the deploy needs secrets. See [ADR 0006](docs/adr/0006-cloudflare-pages-hosting-and-previews.md).
 - **CI verifies, never rewrites.** Lint and formatting are fixed locally by the pre-commit hook. CI only checks, so required checks always report on the PR's HEAD. See [ADR 0008](docs/adr/0008-ci-verifies-never-rewrites-pr-head.md).
 - **Lighthouse on previews and production.** Core Web Vitals, page weight and third-party budgets, plus a check of the security headers in `public/_headers`. See [ADR 0009](docs/adr/0009-lighthouse-on-previews-and-production.md).
-- **Sentry is opt-in.** The SDK is only bundled when `PUBLIC_SENTRY_DSN` is set. See [ADR 0007](docs/adr/0007-sentry-is-opt-in.md).
+- **No error-monitoring SDK.** Sentry was removed, because it added maintenance and, once enabled, page weight and a new third party, for little benefit on a static site. See [ADR 0010](docs/adr/0010-remove-sentry.md), which supersedes [ADR 0007](docs/adr/0007-sentry-is-opt-in.md).
 - **Cookieless analytics.** Cloudflare Web Analytics in production builds only, with no consent banner needed. See [ADR 0002](docs/adr/0002-cookieless-analytics-without-consent-banner.md).
 - **Infrastructure as code.** The Pages project, DNS and zone settings are managed with OpenTofu in [`infra/`](infra/README.md). See [ADR 0003](docs/adr/0003-manage-cloudflare-with-opentofu.md).
 - **DevContainer** for a consistent, reproducible development environment.

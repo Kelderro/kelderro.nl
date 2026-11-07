@@ -1,6 +1,5 @@
 import { defineConfig, envField } from 'astro/config';
 import mdx from '@astrojs/mdx';
-import sentry from '@sentry/astro';
 import sitemap from '@astrojs/sitemap';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -16,14 +15,7 @@ const inlineHash = path =>
 
 // Third-party origins are only allowed when the build actually uses them.
 const analyticsEnabled = Boolean(process.env.PUBLIC_CF_WEB_ANALYTICS_TOKEN);
-const sentryOrigin = process.env.PUBLIC_SENTRY_DSN
-    ? new URL(process.env.PUBLIC_SENTRY_DSN).origin
-    : undefined;
-const connectSources = [
-    "'self'",
-    ...(analyticsEnabled ? ['https://cloudflareinsights.com'] : []),
-    ...(sentryOrigin ? [sentryOrigin] : []),
-];
+const connectSources = ["'self'", ...(analyticsEnabled ? ['https://cloudflareinsights.com'] : [])];
 
 // Stamps a unique build id into dist/sw.js so each deploy invalidates the old caches.
 const serviceWorkerVersion = () => ({
@@ -113,11 +105,6 @@ export default defineConfig({
     },
 
     integrations: [
-        // Sentry is opt-in: without a DSN it would ship its SDK to every page while reporting nothing.
-        // With SENTRY_AUTH_TOKEN/ORG/PROJECT also set, it uploads hidden source maps and deletes them from dist.
-        ...(process.env.NODE_ENV !== 'development' && process.env.PUBLIC_SENTRY_DSN
-            ? [sentry()]
-            : []),
         mdx(),
         sitemap({ filter: page => !page.endsWith('/offline/') }),
         serviceWorkerVersion(),
@@ -154,8 +141,7 @@ export default defineConfig({
 
     // Vite Configuration
     vite: {
-        // Public source maps are opt-in (VITE_SOURCEMAP=true) for local debugging; leaving
-        // this unset lets the Sentry integration manage hidden maps when it is enabled.
+        // Source maps are not published; VITE_SOURCEMAP=true opts in for local debugging.
         build: {
             ...(process.env.VITE_SOURCEMAP === 'true' && { sourcemap: true }),
         },
