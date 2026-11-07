@@ -1,6 +1,6 @@
 # 7. Sentry is opt-in
 
-- Status: Accepted
+- Status: Superseded by [0010](0010-remove-sentry.md)
 - Date: 2026-11-07 (recorded retrospectively; decided in October 2026)
 - Issue: [#150](https://github.com/Kelderro/kelderro.nl/issues/150), introduced in [#127](https://github.com/Kelderro/kelderro.nl/pull/127)
 
