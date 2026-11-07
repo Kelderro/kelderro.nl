@@ -1,0 +1,63 @@
+# Makes an earlier production deployment live again (ADR 0011), for problems
+# the smoke tests don't catch, such as wrong content. See the runbook in the
+# README. Afterwards main is ahead of production until a fix or revert is
+# merged and deployed through a normal pull request.
+name: Rollback production
+
+on:
+    workflow_dispatch:
+        inputs:
+            deployment_id:
+                description: >-
+                    Cloudflare Pages deployment ID to make live. Leave empty for
+                    the production deployment before the live one.
+                required: false
+                type: string
+
+permissions:
+    contents: read
+
+# The same group as pushes to main in ci.yml, so a rollback never runs while a
+# deploy is in progress, or the other way round.
+concurrency:
+    group: production
+    cancel-in-progress: false
+
+jobs:
+    rollback:
+        name: Roll back production
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            - name: Setup Node.js
+              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+              with:
+                  node-version-file: '.nvmrc'
+
+            - name: Roll back
+              id: rollback
+              run: node scripts/pages-production.mjs rollback "$DEPLOYMENT_ID"
+              env:
+                  DEPLOYMENT_ID: ${{ inputs.deployment_id }}
+                  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+            - name: Summary
+              env:
+                  PREVIOUS_ID: ${{ steps.rollback.outputs.previous_id }}
+                  PREVIOUS_COMMIT: ${{ steps.rollback.outputs.previous_commit }}
+                  DEPLOYMENT_ID: ${{ steps.rollback.outputs.deployment_id }}
+                  DEPLOYMENT_COMMIT: ${{ steps.rollback.outputs.commit }}
+                  DEPLOYMENT_URL: ${{ steps.rollback.outputs.url }}
+              run: |
+                  {
+                    echo "## Production rolled back"
+                    echo
+                    echo "- Was live: \`$PREVIOUS_ID\` (commit $PREVIOUS_COMMIT)"
+                    echo "- Live now: \`$DEPLOYMENT_ID\` (commit $DEPLOYMENT_COMMIT), $DEPLOYMENT_URL"
+                    echo
+                    echo "\`main\` is now ahead of production. Fix or revert it in a pull request."
+                  } >> "$GITHUB_STEP_SUMMARY"
