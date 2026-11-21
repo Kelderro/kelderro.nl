@@ -8,7 +8,7 @@ async function openMobileMenu(page: Page, isMobile: boolean) {
     await page.getByRole('navigation').getByRole('button', { name: 'Menu', exact: true }).click();
 }
 
-test('navigation contains expected links', async ({ page, isMobile }) => {
+test('navigation contains expected links', { tag: '@smoke' }, async ({ page, isMobile }) => {
     await page.goto('/');
 
     await openMobileMenu(page, isMobile);
@@ -18,7 +18,7 @@ test('navigation contains expected links', async ({ page, isMobile }) => {
     await expect(page.getByRole('link', { name: /about/i })).toBeVisible();
 });
 
-test('theme toggle switches dark mode', async ({ page, isMobile }) => {
+test('theme toggle switches dark mode', { tag: '@smoke' }, async ({ page, isMobile }) => {
     await page.goto('/');
     const html = page.locator('html');
 
@@ -35,7 +35,7 @@ test('theme toggle switches dark mode', async ({ page, isMobile }) => {
     }
 });
 
-test('theme preference persists on navigation', async ({ page, isMobile }) => {
+test('theme preference persists on navigation', { tag: '@smoke' }, async ({ page, isMobile }) => {
     await page.goto('/');
 
     await openMobileMenu(page, isMobile);

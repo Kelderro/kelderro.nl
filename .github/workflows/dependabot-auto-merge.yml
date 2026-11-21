@@ -1,8 +1,10 @@
 # Automatically merge Dependabot PRs for minor and patch updates once the
-# required status checks pass. There is no approval step: the main branch
-# ruleset requires no approving reviews, and GitHub Actions is not allowed to
-# approve pull requests in this repository, so an approval step would fail and
-# stop the job before auto-merge is enabled.
+# required status checks pass. Those include Lighthouse CI and the smoke tests,
+# which ci.yml runs against the preview Pages' Git integration builds, so an
+# update only merges when it works on Cloudflare (ADR 0011). There is no
+# approval step: the main branch ruleset requires no approving reviews, and
+# GitHub Actions is not allowed to approve pull requests in this repository, so
+# an approval step would fail and stop the job before auto-merge is enabled.
 name: Dependabot auto-merge
 on: pull_request
 

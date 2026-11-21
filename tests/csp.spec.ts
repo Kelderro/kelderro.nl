@@ -1,24 +1,15 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
+import { missingPath, pagePaths as sitePaths, productionBuildURL } from './support/site';
 
 // Astro only applies its Content-Security-Policy to production builds, so these
 // tests run against `astro preview` (the second web server in
 // playwright.config.ts) instead of the dev server the other tests use.
-const PREVIEW_URL = 'http://127.0.0.1:4322';
-test.use({ baseURL: PREVIEW_URL });
+test.use({ baseURL: productionBuildURL });
 
-/** All pages in the sitemap, plus pages that are deliberately left out of it. */
-async function pagePaths(page: Page): Promise<string[]> {
-    const index = await (await page.request.get('/sitemap-index.xml')).text();
-    const sitemaps = [...index.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => new URL(m[1]).pathname);
-    const paths = new Set(['/offline/', '/this-page-does-not-exist']);
-    for (const sitemap of sitemaps) {
-        const xml = await (await page.request.get(sitemap)).text();
-        for (const m of xml.matchAll(/<loc>([^<]+)<\/loc>/g)) paths.add(new URL(m[1]).pathname);
-    }
-    return [...paths];
-}
+/** All pages, plus the 404 page. */
+const pagePaths = async (page: Page) => [...(await sitePaths(page.request)), missingPath];
 
 const sha256 = (content: string) =>
     `'sha256-${createHash('sha256').update(content).digest('base64')}'`;

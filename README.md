@@ -31,6 +31,10 @@ End-to-end and integration tests are written with [Playwright](https://playwrigh
     ```sh
     pnpm test
     ```
+- The tests tagged `@smoke` also run against deployments. Set `PLAYWRIGHT_BASE_URL` to run only those, in Chromium, without local servers:
+    ```sh
+    PLAYWRIGHT_BASE_URL=https://kelderro.nl pnpm exec playwright test
+    ```
 
 ### 📝 License
 
@@ -75,26 +79,28 @@ pnpm run preview
 
 ## 🏗️ Architecture
 
-The site is a static Astro build, deployed to Cloudflare Pages by GitHub Actions. Every pull request gets a preview deployment, which Lighthouse audits before merge. Every push to `main` deploys production, which Lighthouse audits again.
+The site is a static Astro build, deployed to Cloudflare Pages by GitHub Actions. Every pull request from this repository gets a preview deployment, which Lighthouse and the smoke tests check before merge. Every push to `main` deploys production, which they check again. When the smoke tests keep failing in production, CI rolls production back to the deployment that was live before.
 
 ```mermaid
 flowchart LR
     pr[Pull request] --> build
     main[Push to main] --> build
     build["Build and Deploy<br/>lint, format check,<br/>type check, astro build"]
-    e2e["E2E tests<br/>Playwright against<br/>local astro dev"]
+    e2e["E2E tests<br/>Playwright against<br/>local servers"]
     pr --> e2e
     main --> e2e
     build -->|"wrangler pages deploy<br/>(pull request)"| preview[Preview deployment]
     build -->|"wrangler pages deploy<br/>(main)"| prod["Production<br/>kelderro.nl"]
-    preview --> lhPreview["Lighthouse CI<br/>headers + budgets<br/>sticky PR comment"]
-    prod --> lhProd["Lighthouse CI<br/>headers + budgets<br/>is-crawlable"]
+    preview --> lhPreview["Lighthouse CI<br/>+ smoke tests"]
+    prod --> lhProd["Lighthouse CI<br/>+ smoke tests"]
+    lhProd -->|"smoke tests fail twice"| rollback["Roll back production<br/>+ open an issue"]
 ```
 
 - **Astro, static output.** Pages are built ahead of time, with a hash-based Content-Security-Policy per page. Content lives in MDX under `src/content/`. See [ADR 0005](docs/adr/0005-astro-static-build.md).
-- **Cloudflare Pages.** CI builds once and deploys that build. Pages' own production builds are off. Pages still builds previews as an extra check. Dependabot and fork pull requests get no preview, because the deploy needs secrets. See [ADR 0006](docs/adr/0006-cloudflare-pages-hosting-and-previews.md).
+- **Cloudflare Pages.** CI builds once and deploys that build. Pages' own production builds are off. Pages still builds previews as an extra check. Dependabot and fork pull requests get no CI preview, because the deploy needs secrets. For Dependabot, CI checks the preview Pages builds itself instead (ADR 0011). Fork pull requests get none. See [ADR 0006](docs/adr/0006-cloudflare-pages-hosting-and-previews.md).
 - **CI verifies, never rewrites.** Lint and formatting are fixed locally by the pre-commit hook. CI only checks, so required checks always report on the PR's HEAD. See [ADR 0008](docs/adr/0008-ci-verifies-never-rewrites-pr-head.md).
 - **Lighthouse on previews and production.** Core Web Vitals, page weight and third-party budgets, plus a check of the security headers in `public/_headers`. See [ADR 0009](docs/adr/0009-lighthouse-on-previews-and-production.md).
+- **Smoke tests and automatic rollback.** The `@smoke` Playwright tests check every page, the redirects, the service worker and the privacy promise on the real deployment. Dependabot pull requests are checked on the preview that Pages' Git integration builds. A consistent failure in production rolls back. See [ADR 0011](docs/adr/0011-smoke-test-deployments-and-roll-back-production.md).
 - **No error-monitoring SDK.** Sentry was removed, because it added maintenance and, once enabled, page weight and a new third party, for little benefit on a static site. See [ADR 0010](docs/adr/0010-remove-sentry.md), which supersedes [ADR 0007](docs/adr/0007-sentry-is-opt-in.md).
 - **Cookieless analytics.** Cloudflare Web Analytics in production builds only, with no consent banner needed. See [ADR 0002](docs/adr/0002-cookieless-analytics-without-consent-banner.md).
 - **Infrastructure as code.** The Pages project, DNS and zone settings are managed with OpenTofu in [`infra/`](infra/README.md). See [ADR 0003](docs/adr/0003-manage-cloudflare-with-opentofu.md).
@@ -105,6 +111,15 @@ All decisions are listed in [`docs/adr/`](docs/adr/README.md).
 ## 🌐 Deployment
 
 GitHub Actions deploys the site to Cloudflare Pages on every push to `main`, after the build has been linted, type-checked and built. Pull requests from this repository get a preview deployment.
+
+### Rolling back production
+
+CI rolls back by itself when the smoke tests keep failing after a deploy to `main`, and opens or updates the issue "Production was rolled back automatically". For anything the smoke tests don't catch, such as wrong content:
+
+1. Run the **Rollback production** workflow (Actions → Rollback production → Run workflow). Leave the deployment ID empty to make the production deployment before the live one live again, or enter the ID of a deployment from the Pages dashboard. The run summary says which deployment is live now.
+2. Fix or revert the change on `main` in a normal pull request, so it gets a preview and its checks. Until it is merged and deployed, `main` is ahead of production on purpose.
+
+The script behind both, [`scripts/pages-production.mjs`](scripts/pages-production.mjs), also runs locally with `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` set.
 
 ## Credits
 
