@@ -5,10 +5,7 @@ import {
     siDotnet,
     siTypescript,
     siReact,
-    siGo,
-    siRust,
     siDocker,
-    siKubernetes,
     siTerraform,
     siGithubactions,
     siSonarqubeserver,
@@ -39,7 +36,7 @@ function logoColors(item: TechItem): string | undefined {
     return `--logo-light: #${item.lightHex ?? item.hex}; --logo-dark: #${item.darkHex ?? item.hex}`;
 }
 
-/** Near-black brand colours (Copilot, MCP, TeamCity, Rust) vanish on the dark theme background. */
+/** Near-black brand colours (Copilot, MCP, TeamCity) vanish on the dark theme background. */
 function isNearBlack(hex: string): boolean {
     const channel = (i: number) => parseInt(hex.slice(i, i + 2), 16) / 255;
     const luminance = 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
@@ -48,7 +45,7 @@ function isNearBlack(hex: string): boolean {
 
 interface Category {
     label: string;
-    icon: 'code' | 'rocket-launch' | 'strategy' | 'shield-check' | 'terminal-window' | 'thumbs-up';
+    icon: 'code' | 'rocket-launch' | 'strategy' | 'shield-check' | 'terminal-window';
     items: TechItem[];
 }
 
@@ -79,7 +76,7 @@ const categories: Category[] = [
             // simple-icons has no Microsoft logos, so those use text tiles
             { name: '.NET Aspire', hex: '512BD4', abbr: 'AS' },
             { name: 'TypeScript', svgPath: siTypescript.path, hex: siTypescript.hex },
-            // React and Go use these darker brand shades on light backgrounds themselves
+            // React uses this darker brand shade on light backgrounds itself
             { name: 'React', svgPath: siReact.path, hex: siReact.hex, lightHex: '087EA4' },
             { name: 'PowerShell', hex: '012456', abbr: 'PS' },
             { name: 'SQL', hex: '1e4db7', abbr: 'SQ' },
@@ -122,16 +119,6 @@ const categories: Category[] = [
             { name: 'Octopus Deploy', svgPath: siOctopusdeploy.path, hex: siOctopusdeploy.hex },
             { name: 'SonarQube', svgPath: siSonarqubeserver.path, hex: siSonarqubeserver.hex },
             { name: 'Fortify', hex: '1e4db7', abbr: 'FO' },
-        ],
-    },
-    {
-        // Not production experience: technologies I'd take on (AI-assisted), kept apart so they aren't read as the same depth
-        label: 'Open To',
-        icon: 'thumbs-up',
-        items: [
-            { name: 'Go', svgPath: siGo.path, hex: siGo.hex, lightHex: '007D9C' },
-            { name: 'Rust', svgPath: siRust.path, hex: siRust.hex },
-            { name: 'Kubernetes', svgPath: siKubernetes.path, hex: siKubernetes.hex },
         ],
     },
 ];

@@ -107,7 +107,7 @@ const professionalTitle = 'Principal Engineer & Strategic Technology Consultant'
             <section id="experience" class="with-background">
                 <!-- id="engagements" keeps older /#engagements links working -->
                 <div id="engagements">
-                    <CareerTimeline />
+                    <CareerTimeline yearsOfExperience={yearsOfExperience} />
                 </div>
             </section>
             <section id="about">
@@ -176,10 +176,13 @@ const professionalTitle = 'Principal Engineer & Strategic Technology Consultant'
             </section>
         </main>
 
-        <section id="technical-toolkit" class="wrapper stack gap-2 lg:gap-4">
+        <section id="technical-toolkit" class="wrapper stack gap-8 lg:gap-20">
             <header class="section-header stack gap-2 lg:gap-4">
                 <h2>Technical Toolkit</h2>
-                <p>Languages, platforms, and tools I use to deliver enterprise-grade solutions.</p>
+                <p>
+                    Languages, platforms and tools I've delivered with in production. Stack-agnostic
+                    by design: the problem picks the technology.
+                </p>
             </header>
             <TechToolkit />
         </section>
@@ -215,18 +218,6 @@ const professionalTitle = 'Principal Engineer & Strategic Technology Consultant'
         border-color: var(--accent-regular);
         color: var(--gray-0);
         transform: translateY(-2px);
-    }
-
-    @keyframes pulse {
-        0% {
-            opacity: 1;
-        }
-        50% {
-            opacity: 0.4;
-        }
-        100% {
-            opacity: 1;
-        }
     }
 
     .cert-card-wrapper {
@@ -322,13 +313,15 @@ const professionalTitle = 'Principal Engineer & Strategic Technology Consultant'
 
     #about {
         --about-padding-block: 80px;
-        padding: var(--about-padding-block) 20px;
+        padding-block: var(--about-padding-block);
         /* Nav jumps align the heading, not the padding above it, below the sticky header */
         scroll-margin-top: calc(-1 * var(--about-padding-block));
-        width: 100%; /* Auto margins disable flex stretch; without this it sizes to its content */
-        max-width: 1000px;
-        margin: 0 auto;
         color: var(--gray-300);
+    }
+
+    /* Starts on the shared left edge; only the text column is capped, for readable line lengths */
+    #about > * {
+        max-width: 60rem;
     }
 
     #about-quote {
@@ -534,16 +527,11 @@ const professionalTitle = 'Principal Engineer & Strategic Technology Consultant'
         --hero-bg: var(--bg-image-subtle-1);
     }
 
+    /* Section headings share the page's left edge, in line with the content below them */
     .section-header {
-        justify-self: center;
-        text-align: center;
         max-width: 50ch;
         font-size: var(--text-md);
         color: var(--gray-300);
-    }
-
-    .section-header h2 {
-        font-size: var(--text-2xl);
     }
 
     @media (min-width: 50em) {
@@ -556,10 +544,6 @@ const professionalTitle = 'Principal Engineer & Strategic Technology Consultant'
         .section-header {
             grid-area: header;
             font-size: var(--text-lg);
-        }
-
-        .section-header h2 {
-            font-size: var(--text-4xl);
         }
 
         .gallery {
