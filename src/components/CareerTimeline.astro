@@ -5,6 +5,12 @@ import Icon from './Icon.astro';
 import type { Props as IconProps } from './Icon.astro';
 import { formatDuration } from '../lib/duration';
 
+interface Props {
+    yearsOfExperience: number;
+}
+
+const { yearsOfExperience } = Astro.props;
+
 const engagements: CollectionEntry<'engagement'>[] = (await getCollection('engagement')).sort(
     (a: CollectionEntry<'engagement'>, b: CollectionEntry<'engagement'>) =>
         b.data.startDate.valueOf() - a.data.startDate.valueOf()
@@ -63,8 +69,8 @@ const industries: { icon: IconProps['icon']; label: string }[] = [
         <div class="timeline-head-text">
             <h2>Career at a glance</h2>
             <p>
-                Seventeen years across regulated, high-stakes industries, from oil &amp; gas to
-                aviation and government.
+                {yearsOfExperience}+ years across regulated, high-stakes industries, from oil &amp;
+                gas to aviation and government.
             </p>
         </div>
         <ul class="industries" aria-label="Industries worked in">
@@ -173,15 +179,27 @@ const industries: { icon: IconProps['icon']; label: string }[] = [
     }
 
     .timeline-head h2 {
-        font-size: var(--text-xl);
         color: var(--gray-0);
     }
 
+    /* Matches the other section subtitles (.section-header in index.astro) */
     .timeline-head-text p {
-        margin-top: 0.4rem;
-        color: var(--gray-400);
-        font-size: var(--text-sm);
-        max-width: 48ch;
+        margin-top: 0.5rem;
+        color: var(--gray-300);
+        font-size: var(--text-md);
+        max-width: 50ch;
+    }
+
+    @media (min-width: 50em) {
+        /* Same header-to-content space as the other sections */
+        .timeline-head {
+            margin-bottom: 5rem;
+        }
+
+        .timeline-head-text p {
+            margin-top: 1rem;
+            font-size: var(--text-lg);
+        }
     }
 
     .industries {

@@ -165,8 +165,15 @@ h1 {
     font-size: var(--text-5xl);
 }
 
+/* Section headings: one size for every section reachable from the menu */
 h2 {
-    font-size: var(--text-4xl);
+    font-size: var(--text-2xl);
+}
+
+@media (min-width: 50em) {
+    h2 {
+        font-size: var(--text-4xl);
+    }
 }
 
 h3 {
